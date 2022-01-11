@@ -26,7 +26,8 @@ fn main() {
     pegasus::startup(server_conf).ok();
     let mut conf = JobConf::new("word_count_toy");
     conf.set_workers(config.workers);
-    let mut result = pegasus::run(conf, || {
+    pegasus::wait_servers_ready(conf.servers());
+    let mut result = pegasus::run(conf.clone(), || {
         let id = pegasus::get_current_worker().index;
         move |input, output| {
             let lines = if id == 0 {

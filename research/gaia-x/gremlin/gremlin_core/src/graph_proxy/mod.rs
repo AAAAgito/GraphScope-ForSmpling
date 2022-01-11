@@ -17,7 +17,7 @@ mod storage;
 use crate::structure::Statement;
 use crate::DynResult;
 use pegasus::api::function::DynIter;
-pub use storage::{create_demo_graph, encode_store_e_id, ID_MASK};
+pub use storage::{create_demo_graph, encode_store_e_id, GRAPH ,ID_MASK};
 
 pub fn from_fn<I, O, F>(func: F) -> Box<dyn Statement<I, O>>
 where

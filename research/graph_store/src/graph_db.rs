@@ -19,6 +19,7 @@ use crate::parser::DataType;
 use crate::schema::Schema;
 use crate::table::*;
 use crate::utils::Iter;
+use crate::ldbc::*;
 use petgraph::graph::{EdgeIndex, IndexType};
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
@@ -123,7 +124,7 @@ impl<'a, G: IndexType> LocalVertex<'a, G> {
     pub fn get_label(&self) -> Label {
         self.label
     }
-
+    
     pub fn get_property(&self, key: &str) -> Option<ItemTypeRef> {
         self.properties.as_ref().and_then(|prop| prop.get(key))
     }

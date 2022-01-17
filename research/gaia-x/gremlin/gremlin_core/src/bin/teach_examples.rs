@@ -52,7 +52,7 @@ fn main() {
 
     create_demo_graph();
 
-    let mut result = _teach_example5(conf).expect("Run Job Error!");
+    let mut result = _teach_example1(conf).expect("Run Job Error!");
     
     while let Some(Ok(data)) = result.next() {
         println!("{:?}", data);
@@ -72,104 +72,3 @@ fn _teach_example1(conf: JobConf) -> Result<ResultStream<u64>, JobSubmitError> {
     })
 }
 
-fn _teach_example2(conf: JobConf) -> Result<ResultStream<u64>, JobSubmitError> {
-    pegasus::run(conf, move || {
-        move |input, output| {
-            input.input_from(GRAPH.get_all_vertices(None).map(|v| (v.get_id() as u64)))?
-            .flat_map(|v| {
-                let adj_vertices = GRAPH
-                    .get_adj_vertices(v as usize, None, Direction::Outgoing)
-                    .map(|vertex| vertex.get_id() as u64);
-                Ok(adj_vertices)
-            })?
-            .sink_into(output)
-        }
-    })
-}
-
-fn _teach_example3(conf: JobConf) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
-    pegasus::run(conf, move || {
-        move |input, output| {
-            input.input_from(GRAPH.get_all_vertices(None).map(|v| (v.get_id() as u64)))?
-            .flat_map(|v_id| {
-                let label_ids = vec![1];
-                let adj_vertices = GRAPH.get_adj_vertices(v_id as usize, Some(&label_ids), Direction::Outgoing);
-                Ok(adj_vertices.map(move |v| {
-                    let mut path = vec![];
-                    path.push(v_id);
-                    path.push(v.get_id() as u64);
-                    path
-                }))
-            })?
-            .flat_map(|path| {
-                let extend_item_id = path[1];
-                let e_label_ids = vec![1];
-                let adj_vectices = GRAPH.get_adj_vertices(extend_item_id as usize, Some(&e_label_ids), Direction::Incoming);
-                Ok(adj_vectices.map(move |v| {
-                    let mut new_path = path.clone();
-                    new_path.push(v.get_id() as u64);
-                    new_path
-                }))
-            })?
-            .sink_into(output)
-        }
-    })
-}
-
-fn _teach_example4(conf: JobConf) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
-    pegasus::run(conf, move || {
-        move |input, output| {
-            let left_partition = input.input_from(GRAPH.get_all_vertices(None).map(|v| (v.get_id() as u64)))?
-            .flat_map(|v_id| {
-                let label_ids = vec![1];
-                let adj_vertices = GRAPH.get_adj_vertices(v_id as usize, Some(&label_ids), Direction::Outgoing);
-                Ok(adj_vertices.map(move |v| {
-                    let mut path = vec![];
-                    path.push(v_id);
-                    path.push(v.get_id() as u64);
-                    path
-                }))
-            })?;
-            let (left_partition, right_partition) = left_partition.copied()?;
-            left_partition.key_by(|path| Ok((path[1], path)))?
-            .partition_by_key()
-            .inner_join(right_partition.key_by(|path| Ok((path[1], path)))?.partition_by_key())?
-            .map(|(d1, d2)| {
-                let mut new_path = d1.value;
-                new_path.extend(&d2.value[0..1]);
-                Ok(new_path)
-            })?
-            .sink_into(output)
-        }
-    })
-}
-
-fn _teach_example5(conf: JobConf) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
-    pegasus::run(conf, move || {
-        move |input, output| {
-            input.input_from(GRAPH.get_all_vertices(None).map(|v| (v.get_id() as u64)))?
-            .flat_map(|v_id| {
-                let label_ids = vec![1];
-                let adj_vertices = GRAPH.get_adj_vertices(v_id as usize, Some(&label_ids), Direction::Outgoing);
-                Ok(adj_vertices.map(move |v| {
-                    let mut path = vec![];
-                    path.push(v_id);
-                    path.push(v.get_id() as u64);
-                    path
-                }))
-            })?
-            .flat_map(|path| {
-                let extend_item_id = path[1];
-                let e_label_ids = vec![1];
-                let adj_vectices = GRAPH.get_adj_vertices(extend_item_id as usize, Some(&e_label_ids), Direction::Incoming);
-                Ok(adj_vectices.map(move |v| {
-                    let mut new_path = path.clone();
-                    new_path.push(v.get_id() as u64);
-                    new_path
-                }))
-            })?
-            .filter(|path| Ok(path[0] != path[2]))?
-            .sink_into(output)
-        }
-    })
-}

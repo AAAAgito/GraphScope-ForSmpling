@@ -31,6 +31,13 @@ pub struct Config {
     benchmark_type: String
 }
 
+fn get_partition(id: u64, num_servers: usize, worker_num: usize) -> u64 {
+    let magic_num = id / (num_servers as u64);
+    let num_servers = num_servers as u64;
+    let worker_num = worker_num as u64;
+    (id - magic_num * num_servers)* worker_num + magic_num % worker_num
+}
+
 fn main() {
     pegasus_common::logs::init_log();
     let config: Config = Config::from_args();
@@ -52,7 +59,7 @@ fn main() {
 
     create_demo_graph();
 
-    let mut result = _teach_example2(conf).expect("Run Job Error!");
+    let mut result = _teach_example7(conf).expect("Run Job Error!");
     
     while let Some(Ok(data)) = result.next() {
         println!("{:?}", data);
@@ -248,6 +255,47 @@ fn _teach_example6(conf: JobConf) -> Result<ResultStream<Vec<u64>>, JobSubmitErr
                 }
                 Ok(connected)
             })?
+            .sink_into(output)
+        }
+    })
+}
+
+fn _teach_example7(conf: JobConf) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
+    let num_servers = if conf.servers().len() == 0 {1} else {conf.servers().len()};
+    let worker_num = conf.workers as usize;
+    pegasus::run(conf, move || {
+        move |input, output| {
+            let v_label_ids = vec![0];
+            input.input_from(GRAPH.get_all_vertices(Some(&v_label_ids)).map(|v| (v.get_id() as u64))
+            .filter(move |v_id| {
+                let worker_index = pegasus::get_current_worker().index as u64;
+                get_partition(*v_id, num_servers, worker_num) == worker_index
+            }))?
+            .repartition(move |id| Ok(get_partition(*id, num_servers, worker_num)))            
+            .flat_map(|v_id| {
+                let e_label_ids = vec![0];
+                let adj_vertices = GRAPH.get_adj_vertices(v_id as usize, Some(&e_label_ids), Direction::Outgoing);
+                Ok(adj_vertices.map(move |v| {
+                    let mut path = vec![];
+                    path.push(v_id);
+                    path.push(v.get_id() as u64);
+                    path
+                }))
+            })?
+            .repartition(move |path| Ok(get_partition(path[0], num_servers, worker_num)))
+            .flat_map(|path| {
+                let extend_item_id = path[0];
+                let e_label_ids = vec![1];
+                let adj_vectices = GRAPH.get_adj_vertices(extend_item_id as usize, Some(&e_label_ids), Direction::Outgoing);
+                Ok(adj_vectices.map(move |v| {
+                    let mut new_path = path.clone();
+                    new_path.push(v.get_id() as u64);
+                    new_path
+                }))
+            })?
+            .count()?
+            .into_stream()?
+            .flat_map(|c| Ok(vec![vec![c]].into_iter()))?
             .sink_into(output)
         }
     })

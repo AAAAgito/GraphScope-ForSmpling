@@ -1,0 +1,12 @@
+[network]
+server_id = 1
+ip = '127.0.0.1'
+port = 1235
+[[network.peers]]
+server_id = 0
+ip = '127.0.0.1'
+port = 1234
+[[network.peers]]
+server_id = 1
+ip = '127.0.0.1'
+port = 1235

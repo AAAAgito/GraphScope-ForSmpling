@@ -89,7 +89,8 @@ fn _teach_example2(conf: JobConf) -> Result<ResultStream<u64>, JobSubmitError> {
             .filter(move |v_id| {
                 let worker_index = pegasus::get_current_worker().index as u64;
                 v_id % worker_num == worker_index
-            }))?
+            })
+        )?
             .flat_map(|v| {
                 let adj_vertices = GRAPH
                     .get_adj_vertices(v as usize, None, Direction::Outgoing)

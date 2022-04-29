@@ -32,9 +32,6 @@ use std::time::Instant;
 use rand;
 use rand::Rng;
 
-use std::fs::File;
-use std::io::prelude::*;
-
 #[derive(Debug, Clone, StructOpt, Default)]
 pub struct Config {
     #[structopt(short = "s", long = "servers")]
@@ -66,70 +63,53 @@ fn main() {
 
     create_demo_graph();
 
-    let para_1 = vec![5, 10u64, 20, 30, 40, 50, 60];
-    let para_2 = vec![70, 60, 50, 40, 30, 20, 10];
+    let area_num =2;
+    let start_vertex = vec![1,2];
+    // let mut result = _teach_example1(conf).expect("Run Job Error!");
+    // let mut result = _sampling_start_vertex(conf, area_num).expect("Run Job Error!");
+    // let mut result2 = _sampling_vertex(conf, 1, start_vertex, 2).expect("Run Job Error!");
+    
+    // while let Some(Ok(data)) = result.next() {
+    //     println!("{:?}", data);
+    // }
+    let para_1 = vec![5, 10u64, 20, 30, 40, 100];
+    let para_2 = vec![10u64, 20, 30, 40, 50, 60, 70];
     let para_3 = vec![2, 3];
     let para_4 = vec![15];
     let mut result: Vec<Vec<Vec<u128>>> =vec![vec![vec![]]];
     
     result.pop();
-    let mut f = std::fs::File::create("data.txt").unwrap();
-
-    
     for l in para_4.clone() {
-        for k in para_3.clone() {
-            let start_full = Instant::now();
-            println!("======================================================================");
-            println!("              Sample ALL                ");
-            println!("======================================================================");
-            println!("rate: {:?},  area: {:?},  min_size: {:?},  max_size: {:?}", 100, 0, &k, &l);
-            let cmp_result = _sampling_arrange(100, 0, k, l, l);
-            let end_full = Instant::now();
-            println!("time cost: {:?}",end_full.duration_since(start_full));
-            for j in para_2.clone() {
-                
-                f.write("\n\n".as_bytes()).unwrap();
-                f.write("area: ".as_bytes()).unwrap();
-                f.write(j.to_string().as_bytes()).unwrap();
-                f.write("   min_size: ".as_bytes()).unwrap();
-                f.write(k.to_string().as_bytes()).unwrap();
-
-
-                for times in 0..5 {
-                    for i in para_1.clone() {
-                        let start_time = Instant::now();
-                        println!("======================================================================");
-                        println!("                              ");
-                        println!("======================================================================");
-                        println!("rate: {:?},  area: {:?},  min_size: {:?},  max_size: {:?}", &i, &j, &k, &l);
-                        result.push( _sampling_arrange(i, j, k, l, l));
-                        let end_time = Instant::now();
-                        // println!("result: {:?}", result);
-                        println!("time cost: {:?}",end_time.duration_since(start_time));
-                    }
-                    let mut accurate_list: Vec<f64> = vec![];
-                    let ans: &Vec<Vec<u128>> = &cmp_result.clone();
-                    for z in 0..para_1.len() {
-                        let cur: &Vec<Vec<u128>> = &result[z];
-                        let total = ans.len() as f64;
-                        let mut correct = 0f64;
-                        for j in cur {
-                            if ans.contains(j) {
-                                correct = correct +1.0;
-                            }
-                        }
-                        let acc: f64 = correct/total;
-                        accurate_list.push(acc);
-                    }
-                    f.write("\n".as_bytes()).unwrap();
-                    for i in accurate_list {
-                        f.write(i.to_string().as_bytes()).unwrap();
-                        f.write(" | ".as_bytes()).unwrap();
-                        println!("Accurate: {:?}", i);
-                    }
-                    result.clear();
+        for j in para_2.clone() {
+            for k in para_3.clone() {
+                for i in para_1.clone() {
+                    let start_time = Instant::now();
+                    println!("======================================================================");
+                    println!("rate: {:?},  area: {:?},  min_size: {:?},  max_size: {:?}", &i, &j, &k, &l);
+                    // println!("======================================================================");
+                    result.push( _sampling_arrange(i, j, k, l, l));
+                    let end_time = Instant::now();
+                    // println!("result: {:?}", result);
+                    println!("time cost: {:?}",end_time.duration_since(start_time));
                 }
-                
+                let mut accurate_list: Vec<f64> = vec![];
+                let ans: &Vec<Vec<u128>> = &result[para_1.len()-1];
+                for z in 0..para_1.len()-1 {
+                    let cur: &Vec<Vec<u128>> = &result[z];
+                    let total = ans.len() as f64;
+                    let mut correct = 0f64;
+                    for j in cur {
+                        if ans.contains(j) {
+                            correct = correct +1.0;
+                        }
+                    }
+                    let acc: f64 = correct/total;
+                    accurate_list.push(acc);
+                }
+                for i in accurate_list {
+                    println!("Accurate: {:?}", i);
+                }
+                result.clear();
             }
         }
     }
@@ -327,9 +307,6 @@ fn _pattern_mining(graphdb: &LargeGraphDB, min_pattern_size: u64, max_pattern_si
     catalog.insert(vec![0u128,0u128], 0);
     occur_count.insert(0 as u64);
     let mut select_iter = vertex_set.iter();
-    // for test
-    let mut appear_max_len =0;
-
     while to_mining.is_empty() || occur_count.len()<vertex_set.len(){
         // println!("Get started");
         let select_option = select_iter.next();
@@ -347,24 +324,7 @@ fn _pattern_mining(graphdb: &LargeGraphDB, min_pattern_size: u64, max_pattern_si
             // println!("Minning queue size = {:?}", to_mining.len() as u64);
             let confadj = JobConf::new("confadj");
             let path = to_mining.pop_front().unwrap();
-            if path.len()as u64 > appear_max_len {
-                appear_max_len = path.len()as u64;
-            }
             // println!("Path {:?}",path);
-            if path.len()>min_pattern_size as usize {
-                let c_path = path.clone();
-                // println!("=================update catalog====================");
-                let cata_index =_update_catalog(&c_path, graphdb);
-                if !catalog.contains_key(&vec![cata_index[0],cata_index[1]]) {
-                    catalog.insert(vec![cata_index[0],cata_index[1]], 1);
-                }
-                else {
-                    let key = vec![cata_index[0],cata_index[1]];
-                    let value = catalog[&key] as u128 +1;
-                    catalog.remove(&key);
-                    catalog.insert(key, value);
-                }
-            }
             let mut result = _sampling_adjvertex(confadj, &path).expect("Run Job Error!");
             
             // get extend vertex into to_mining
@@ -378,13 +338,24 @@ fn _pattern_mining(graphdb: &LargeGraphDB, min_pattern_size: u64, max_pattern_si
                 
                 if (!path.len() as u64 >= max_pattern_size) && !occur_count.contains(&sample_id) {
                     let mut clone_path = path.clone();
+                    let c_path = path.clone();
                     clone_path.push(sample_id);
                     to_mining.push_back(clone_path);
                     // input: hashset: occur_count, catalog: HashMap
                     // output: update HashMap
-                    
+                    if path.len()>min_pattern_size as usize {
+                        let cata_index =_update_catalog(&c_path, graphdb);
+                        if !catalog.contains_key(&vec![cata_index[0],cata_index[1]]) {
+                            catalog.insert(vec![cata_index[0],cata_index[1]], 1);
+                        }
+                        else {
+                            let key = vec![cata_index[0],cata_index[1]];
+                            let value = catalog[&key] as u128 +1;
+                            catalog.remove(&key);
+                            catalog.insert(key, value);
+                        }
+                    }
                 }
-                
                 if !occur_count.contains(&sample_id) {
                     to_mining.push_back(vec![sample_id]);
                     occur_count.insert(sample_id);
@@ -393,9 +364,8 @@ fn _pattern_mining(graphdb: &LargeGraphDB, min_pattern_size: u64, max_pattern_si
             // occur_count.clear();
         }
     }
-    
-    println!("Length {:?}",appear_max_len);
     let statistic_catalog = catalog.clone();
+    let statistic_vertex = vertex_set.clone();
 
     let mut most_fre_pattern:Vec<Vec<u128>> = vec![vec![]];
     let mut fre_count :Vec<u128> = vec![0];
@@ -407,27 +377,25 @@ fn _pattern_mining(graphdb: &LargeGraphDB, min_pattern_size: u64, max_pattern_si
         sort_num = pattern_counts.len() as u64-1;
     }
     for j in 0..sort_num as usize {
-        let mut max_count: u128 = 0;
-        let mut max_index: usize = 0;
-        if pattern_counts.len()==0 {
-            break;
-        }
-        for i in 0..pattern_counts.len() {
-            if pattern_counts[i]>max_count {
-                max_count = pattern_counts[i];
-                max_index = i;
+        for i in pattern_counts.len()-1..0 {
+            if !pattern_counts[i]<=pattern_counts[i-1] {
+                let mid: u128 = pattern_counts[i];
+                pattern_counts[i] = pattern_counts[i-1];
+                pattern_counts[i-1] = mid;
+                let pattern_mid: Vec<u128> = patterns[i].clone();
+                patterns[i] = patterns[i-1].clone();
+                patterns[i-1] = pattern_mid;
             }
         }
-        most_fre_pattern.push(vec![patterns[max_index][0], patterns[max_index][1]]);
-        fre_count.push(pattern_counts[max_index]);
-        pattern_counts.remove(max_index);
-        patterns.remove(max_index);
+        most_fre_pattern.push(vec![patterns[j][0], patterns[j][1]]);
+        fre_count.push(pattern_counts[j]);
     }
-    // println!("|||||Message catalog|||||");
-    // println!("{:?}",fre_count);
-    // println!("catalog: {:?}",statistic_catalog);
+    println!("|||||Message catalog|||||");
+    println!("{:?}",fre_count);
+    println!("catalog: {:?}",statistic_catalog);
     let pattern_kinds = statistic_catalog.len() as u64;
-    println!("Pattern type number is {:?}   vertex number is {:?}", pattern_kinds, occur_count.len());
+    println!("Pattern type number is {:?}", pattern_kinds);
+    println!("vertex number is {:?}", occur_count.len());
 
     most_fre_pattern
     
@@ -492,6 +460,7 @@ fn _sort_vertex(vec_id: &mut Vec<u64>, vec_in: &mut Vec<u64>, vec_out: &mut Vec<
 // return a path
 fn _update_catalog(src: &Vec<u64>, graphdb: &LargeGraphDB) -> Vec<u128> {
     
+    // println!("update catalog");
     let prime_number = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
         31, 37, 41, 43, 47, 53, 59, 61, 67, 71];
     let mut vertex_indegree = HashMap::new();
@@ -566,222 +535,11 @@ fn _update_catalog(src: &Vec<u64>, graphdb: &LargeGraphDB) -> Vec<u128> {
             local_string_in = local_string_in * prime;
         }
 
-        string_out = string_out*255 + local_string_out + graphdb.get_vertex(chose_vertex as usize).unwrap().get_label()[0] as u128;
-        string_in = string_in*255 + local_string_in + graphdb.get_vertex(chose_vertex as usize).unwrap().get_label()[0] as u128;
+        string_out = string_out*8 + local_string_out + graphdb.get_vertex(chose_vertex as usize).unwrap().get_label()[0] as u128;
+        string_in = string_in*8 + local_string_in + graphdb.get_vertex(chose_vertex as usize).unwrap().get_label()[0] as u128;
         vec_id.pop();
     }
     let result = vec![string_out, string_in];
     result
 
-}
-
-
-
-fn _origion_graph_mining(graphdb: &LargeGraphDB, min_pattern_size: u64, max_pattern_size: u64, top_frequent_pattern: u64, vertex_set: HashSet<u64>) ->HashMap<Vec<u128>,u128> {
-    
-    let mut catalog = HashMap::new();
-    let mut occur_count = HashSet::new();
-    let mut to_mining = VecDeque::new();
-    
-
-    catalog.insert(vec![0u128,0u128], 0);
-    occur_count.insert(0 as u64);
-    let mut select_iter = vertex_set.iter();
-    // for test
-    let mut appear_max_len =0;
-
-    while to_mining.is_empty() || occur_count.len()<vertex_set.len(){
-        // println!("Get started");
-        let select_option = select_iter.next();
-        if select_option.is_none() {
-            break;
-        }
-        let select_id :&u64 = select_option.unwrap();
-        if occur_count.contains(select_id) {
-            continue;
-        }
-        to_mining.push_back(vec![*select_id]);
-        
-
-        while !to_mining.is_empty() {
-            // println!("Minning queue size = {:?}", to_mining.len() as u64);
-            let confadj = JobConf::new("confadj");
-            let path = to_mining.pop_front().unwrap();
-            if path.len()as u64 > appear_max_len {
-                appear_max_len = path.len()as u64;
-            }
-            // println!("Path {:?}",path);
-            if path.len()>min_pattern_size as usize {
-                let c_path = path.clone();
-                // println!("=================update catalog====================");
-                let cata_index =_update_catalog(&c_path, graphdb);
-                if !catalog.contains_key(&vec![cata_index[0],cata_index[1]]) {
-                    catalog.insert(vec![cata_index[0],cata_index[1]], 1);
-                }
-                else {
-                    let key = vec![cata_index[0],cata_index[1]];
-                    let value = catalog[&key] as u128 +1;
-                    catalog.remove(&key);
-                    catalog.insert(key, value);
-                }
-            }
-            let mut result = _sampling_adjvertex(confadj, &path).expect("Run Job Error!");
-            
-            // get extend vertex into to_mining
-            while let Some(Ok(data)) = result.next() {
-                
-                // println!("Get adj vertex");
-                let sample_id: u64 = data[1];
-                if graphdb.get_vertex(sample_id as usize).is_none() {
-                    continue;
-                }
-                
-                if (!path.len() as u64 >= max_pattern_size) && !occur_count.contains(&sample_id) {
-                    let mut clone_path = path.clone();
-                    clone_path.push(sample_id);
-                    to_mining.push_back(clone_path);
-                    // input: hashset: occur_count, catalog: HashMap
-                    // output: update HashMap
-                    
-                }
-                
-                if !occur_count.contains(&sample_id) {
-                    to_mining.push_back(vec![sample_id]);
-                    occur_count.insert(sample_id);
-                }
-            }
-            // occur_count.clear();
-        }
-    }
-    
-    println!("Length {:?}",appear_max_len);
-    let statistic_catalog = catalog.clone();
-
-    let mut most_fre_pattern:Vec<Vec<u128>> = vec![vec![]];
-    let mut fre_count :Vec<u128> = vec![0];
-    let catalog_clone = catalog.clone();
-    let mut patterns: Vec<Vec<u128>> = catalog.into_keys().collect();
-    let mut pattern_counts: Vec<u128> = catalog_clone.into_values().collect();
-    let mut sort_num = top_frequent_pattern;
-    if sort_num > pattern_counts.len() as u64-1 {
-        sort_num = pattern_counts.len() as u64-1;
-    }
-    for j in 0..sort_num as usize {
-        let mut max_count: u128 = 0;
-        let mut max_index: usize = 0;
-        if pattern_counts.len()==0 {
-            break;
-        }
-        for i in 0..pattern_counts.len() {
-            if pattern_counts[i]>max_count {
-                max_count = pattern_counts[i];
-                max_index = i;
-            }
-        }
-        most_fre_pattern.push(vec![patterns[max_index][0], patterns[max_index][1]]);
-        fre_count.push(pattern_counts[max_index]);
-        pattern_counts.remove(max_index);
-        patterns.remove(max_index);
-    }
-    // println!("|||||Message catalog|||||");
-    // println!("{:?}",fre_count);
-    // println!("catalog: {:?}",statistic_catalog);
-    let pattern_kinds = statistic_catalog.len() as u64;
-    println!("Pattern type number is {:?}   vertex number is {:?}", pattern_kinds, occur_count.len());
-
-    statistic_catalog.clone()
-    
-}
-
-
-fn _sampling_origion(sample_rate: u64, area_num: u64, min_pattern_size: u64, max_pattern_size: u64, top_frequent_pattern: u64) -> HashMap<Vec<u128>,u128>{
-
-    let mut sampled = HashSet::new();
-    let mut mut_graph: MutableGraphDB<DefaultId, InternalId> = GraphDBConfig::default().new();
-
-    if sample_rate==100u64 {
-        let conf0 = JobConf::new("conf0");
-        let mut all_vertices = _sampling_all_vertex(conf0).expect("Run Job Error!");
-        while let Some(Ok(data)) = all_vertices.next() {
-            sampled.insert(data);
-            let sample_label = GRAPH.get_vertex(data as usize).unwrap().get_label();
-            let v1: DefaultId = LDBCVertexParser::to_global_id(data as usize, 0);
-            mut_graph.add_vertex(v1, sample_label);
-        }
-    }
-    else {
-        let sample_num = (GRAPH.get_all_vertices(None).count() as u64)*sample_rate/100;
-        // println!("Expected Sample length = {:?}", sample_num as u64);
-        let conf1 = JobConf::new("conf1");
-        let mut start_vertices = _sampling_start_vertex(conf1, area_num).expect("Run Job Error!");
-        let mut buffer = vec![];
-    
-        
-        while let Some(Ok(data)) = start_vertices.next() {
-            if !sampled.contains(&data){
-                sampled.insert(data);
-                let sample_label = GRAPH.get_vertex(data as usize).unwrap().get_label();
-                let v1: DefaultId = LDBCVertexParser::to_global_id(data as usize, 0);
-                mut_graph.add_vertex(v1, sample_label);
-                buffer.push(data);
-            }
-            // println!("{:?}", data);
-        }
-        while !sampled.len() as u64 >= sample_num {
-    
-            let conf2 = JobConf::new("conf2");
-            if buffer.len() as u64 ==0 {
-                // println!("All vertex getted");
-                break;
-            }
-            let mut result2 = _sampling_adjvertex(conf2, &buffer).expect("Run Job Error!");
-            buffer.clear();
-            while let Some(Ok(data)) = result2.next() {
-                let sample_id: u64 = data[1];
-                let src_id: u64 = data[0];
-                if !sampled.contains(&sample_id) && !(sampled.len() as u64 >= sample_num){
-                    sampled.insert(sample_id);
-    
-                    let v1: DefaultId = LDBCVertexParser::to_global_id(sample_id as usize, 0);
-                    let sample_label = GRAPH.get_vertex(sample_id as usize).unwrap().get_label();
-                    mut_graph.add_vertex(v1, sample_label);
-                    
-                    let v2: DefaultId = LDBCVertexParser::to_global_id(src_id as usize, 0);
-                    let src_label = GRAPH.get_vertex(src_id as usize).unwrap().get_label();
-                    if !sampled.contains(&src_id) && !(sampled.len() as u64 >= sample_num){
-                        mut_graph.add_vertex(v2, src_label);
-                    }
-                    // println!("src: {:?}, dst: {:?}",src_label,sample_label);
-                    
-    
-                    buffer.push(sample_id);
-                }
-                // println!("{:?}", data);
-            }
-        }
-    }
-    
-
-    
-    for i in sampled.clone() {
-        // edge add
-        let conf3 = JobConf::new("conf3");
-        let mut adjout = _sampling_outvertex(conf3, &vec![i]).expect("Run Job Error!");
-        while let Some(Ok(data)) = adjout.next() {
-            
-            let dst_id: u64 = data;
-            if sampled.contains(&dst_id) {
-                mut_graph.add_edge(i as usize, dst_id as usize, 0u8);
-            }
-        }
-
-    }
-
-    // println!("Sample length = {:?}", sampled.len() as u64);
-
-    let schema_file = "data/schema.json";
-    let schema =
-            LDBCGraphSchema::from_json_file(schema_file).expect("Read graph schema error!");
-    _origion_graph_mining(&mut_graph.into_graph(schema), min_pattern_size, max_pattern_size, top_frequent_pattern, sampled)
-    
 }

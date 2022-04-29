@@ -23,6 +23,7 @@ use crate::{register_graph, DynResult, GraphProxy, ID};
 use dyn_type::BorrowObject;
 use graph_store::config::{JsonConf, DIR_GRAPH_SCHEMA, FILE_SCHEMA};
 use graph_store::ldbc::LDBCVertexParser;
+use graph_store::ldbc::GraphLoader;
 use graph_store::prelude::{
     DefaultId, EdgeId, GlobalStoreTrait, GlobalStoreUpdate, GraphDBConfig, InternalId,
     LDBCGraphSchema, LargeGraphDB, LocalEdge, LocalVertex, MutableGraphDB, Row, INVALID_LABEL_ID,
@@ -50,18 +51,15 @@ fn initialize() -> Arc<DemoGraph> {
 }
 
 fn _init_graph() -> LargeGraphDB<DefaultId, InternalId> {
-    if DATA_PATH.is_empty() {
-        info!("Create and use the modern graph for demo.");
-        _init_modern_graph()
-    } else {
-        info!("Read the graph data from {:?} for demo.", *DATA_PATH);
-        GraphDBConfig::default()
-            .root_dir(&(*DATA_PATH))
-            .partition(*PARTITION_ID)
-            .schema_file(&(DATA_PATH.as_ref() as &Path).join(DIR_GRAPH_SCHEMA).join(FILE_SCHEMA))
-            .open()
-            .expect("Open graph error")
-    }
+    let data_dir = "data/test_data";
+    let root_dir = "data/test_data";
+    let schema_file = "data/schema.json";
+    let mut loader =
+        GraphLoader::<DefaultId, InternalId>::new(data_dir, root_dir, schema_file, 20, 0, 1);
+    // load whole graph
+    loader.load().expect("Load ldbc data error!");
+    let graphdb = loader.into_graph();
+    graphdb
 }
 
 fn _init_modern_graph() -> LargeGraphDB<DefaultId, InternalId> {

@@ -29,6 +29,7 @@ structopt = "0.2"
 vec_map = "0.8.2"
 tempdir = "0.3"
 snmalloc-rs = "0.2"
+rand = "0.3.17"
 
 [build-dependencies]
 tonic-build = "0.4"

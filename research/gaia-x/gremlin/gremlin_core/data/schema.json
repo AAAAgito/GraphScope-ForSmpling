@@ -52,12 +52,12 @@
         "ID"
       ],
       [
-        "title",
-        "String"
-      ],
-      [
         "creationDate",
         "Date"
+      ],
+      [
+        "title",
+        "String"
       ]
     ],
     "POST": [
@@ -66,12 +66,12 @@
         "ID"
       ],
       [
-        "imageFile",
-        "String"
-      ],
-      [
         "creationDate",
         "Date"
+      ],
+      [
+        "imageFile",
+        "String"
       ],
       [
         "locationIP",
@@ -95,9 +95,14 @@
       ]
     ],
     "PERSON": [
+      
       [
         "id",
         "ID"
+      ],
+      [
+        "creationDate",
+        "String"
       ],
       [
         "firstName",
@@ -116,15 +121,19 @@
         "Date"
       ],
       [
-        "creationDate",
-        "Date"
-      ],
-      [
-        "locationIP",
+        "locatrionIP",
         "String"
       ],
       [
         "browserUsed",
+        "String"
+      ],
+      [
+        "speaks",
+        "String"
+      ],
+      [
+        "email",
         "String"
       ]
     ],

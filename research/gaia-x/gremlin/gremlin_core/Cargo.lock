@@ -630,7 +630,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gremlin_core"
+name = "gremlin_core2"
 version = "0.1.0"
 dependencies = [
  "bit-set",
@@ -650,6 +650,7 @@ dependencies = [
  "pegasus_config",
  "pegasus_server",
  "prost 0.8.0",
+ "rand 0.3.23",
  "snmalloc-rs",
  "structopt 0.2.18",
  "strum",
@@ -1349,6 +1350,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47aa80447ce4daf1717500037052af176af5d38cc3e571d9ec1c7353fc10c87d"
 dependencies = [
  "proc-macro2 1.0.36",
+]
+
+[[package]]
+name = "rand"
+version = "0.3.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64ac302d8f83c0c1974bf758f6b041c6c8ada916fbb44a609158ca8b064cc76c"
+dependencies = [
+ "libc",
+ "rand 0.4.6",
 ]
 
 [[package]]

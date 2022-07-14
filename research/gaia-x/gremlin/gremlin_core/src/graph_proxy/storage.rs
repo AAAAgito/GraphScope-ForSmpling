@@ -51,8 +51,8 @@ fn initialize() -> Arc<DemoGraph> {
 }
 
 fn _init_graph() -> LargeGraphDB<DefaultId, InternalId> {
-    let data_dir = "data/test_data";
-    let root_dir = "data/test_data";
+    let data_dir = "data/graph_data";
+    let root_dir = "data/graph_data";
     let schema_file = "data/schema.json";
     let mut loader =
         GraphLoader::<DefaultId, InternalId>::new(data_dir, root_dir, schema_file, 20, 0, 1);

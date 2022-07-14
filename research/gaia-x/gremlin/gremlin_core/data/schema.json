@@ -52,12 +52,12 @@
         "ID"
       ],
       [
-        "creationDate",
-        "Date"
-      ],
-      [
         "title",
         "String"
+      ],
+      [
+        "creationDate",
+        "Date"
       ]
     ],
     "POST": [
@@ -66,12 +66,12 @@
         "ID"
       ],
       [
-        "creationDate",
-        "Date"
-      ],
-      [
         "imageFile",
         "String"
+      ],
+      [
+        "creationDate",
+        "Date"
       ],
       [
         "locationIP",

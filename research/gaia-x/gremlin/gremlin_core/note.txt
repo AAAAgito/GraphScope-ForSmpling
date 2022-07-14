@@ -1,0 +1,10 @@
+S is the all subset that exist in CEG
+S' is the all subset that exist in CEG after edge extend
+
+D: difference of S, S'
+E: extension in Markov table(static) (how: all patterns->extend this edge ->new all patterns(new only))
+I: 
+
+
+.filter ()
+

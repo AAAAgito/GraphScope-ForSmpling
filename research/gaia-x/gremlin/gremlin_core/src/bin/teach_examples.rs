@@ -164,8 +164,8 @@ fn _test_pattern_mining() {
     }
 
     // Experiment
-    let area = vec![20];
-    let rate = vec![64,25,50];
+    let area = vec![40];
+    let rate = vec![25,50,100];
 
     let mut string_to_pattern = HashMap::new();
     string_to_pattern.insert("_1_2_13_0_1_0_1_9_11_0_0_0_1_9_11_0_1_0_2_1_0_0_0_0_".to_string(), "G4");
@@ -175,14 +175,14 @@ fn _test_pattern_mining() {
     string_to_pattern.insert("_2_1_0_0_0_0_2_3_3_0_0_0_".to_string(), "B12");
 
     for i in area {
+        f.write("\n area ".as_bytes());
+        f.write(i.to_string().as_bytes());
+        f.write("\n".as_bytes());
         for j in rate.clone() {
-            f.write("\n area ".as_bytes());
-            f.write(i.to_string().as_bytes());
-            f.write("\n".as_bytes());
             let result = _sampling_arrange(j, i, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
             println!("pattern code 20{:?}", result);
-            f.write("\n rate: ".as_bytes());
             f.write(j.to_string().as_bytes());
+            f.write(" ".as_bytes());
             for i in result.keys() {
                 f.write("  ".as_bytes());
                 f.write(string_to_pattern[i].as_bytes());

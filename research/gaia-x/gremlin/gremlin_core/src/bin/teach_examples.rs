@@ -95,6 +95,7 @@ fn _test_pattern_generate() {
 // done
 fn _test_pattern_mining() {
 
+    let mut f = std::fs::File::create("sampling_result.txt").unwrap();
     let mut G1: Vec<Vec<Vec<u64>>> =Vec::new();
     G1.push(vec![vec![0,1],vec![12,1,12,2]]);
     G1.push(vec![vec![1,1],vec![12,2]]);
@@ -161,24 +162,54 @@ fn _test_pattern_mining() {
     for i in res.split("==") {
         str_info12.push(i.to_string());
     }
-    let result = _sampling_arrange(5, 20, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 20{:?}", result);
-    let result = _sampling_arrange(20, 20, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 50 {:?}", result);
-    let result = _sampling_arrange(40, 20, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 100 {:?}", result);
-    let result = _sampling_arrange(5, 40, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 20{:?}", result);
-    let result = _sampling_arrange(10, 40, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 50 {:?}", result);
-    let result = _sampling_arrange(20, 40, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 100 {:?}", result);
-    let result = _sampling_arrange(5, 80, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 20{:?}", result);
-    let result = _sampling_arrange(10, 80, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 50 {:?}", result);
-    let result = _sampling_arrange(20, 80, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-    println!("pattern code 100 {:?}", result);
+
+    // Experiment
+    let area = vec![20];
+    let rate = vec![64,25,50];
+
+    let mut string_to_pattern = HashMap::new();
+    string_to_pattern.insert("_1_2_13_0_1_0_1_9_11_0_0_0_1_9_11_0_1_0_2_1_0_0_0_0_".to_string(), "G4");
+    string_to_pattern.insert("_1_1_12_0_0_1_1_1_12_1_2_0_1_1_12_1_2_1_".to_string(), "G1");
+    string_to_pattern.insert("_1_1_12_0_0_1_1_1_12_1_2_0_1_1_12_1_2_1_1_9_11_0_0_1_1_9_11_0_1_2_1_9_11_0_2_0_9_8_17_0_0_0_9_8_17_0_1_0_9_8_17_0_2_0_".to_string(), "B11");
+    string_to_pattern.insert("_1_12_15_0_0_0_1_12_15_0_1_0_1_1_12_1_1_0_".to_string(), "G2");
+    string_to_pattern.insert("_2_1_0_0_0_0_2_3_3_0_0_0_".to_string(), "B12");
+
+    for i in area {
+        for j in rate.clone() {
+            f.write("\n area ".as_bytes());
+            f.write(i.to_string().as_bytes());
+            f.write("\n".as_bytes());
+            let result = _sampling_arrange(j, i, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+            println!("pattern code 20{:?}", result);
+            f.write("\n rate: ".as_bytes());
+            f.write(j.to_string().as_bytes());
+            for i in result.keys() {
+                f.write("  ".as_bytes());
+                f.write(string_to_pattern[i].as_bytes());
+                f.write(" ".as_bytes());
+                f.write(result[i].to_string().as_bytes());
+            }
+
+        }
+    }
+    // let result = _sampling_arrange(5, 20, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 20{:?}", result);
+    // let result = _sampling_arrange(20, 20, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 50 {:?}", result);
+    // let result = _sampling_arrange(40, 20, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 100 {:?}", result);
+    // let result = _sampling_arrange(5, 40, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 20{:?}", result);
+    // let result = _sampling_arrange(10, 40, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 50 {:?}", result);
+    // let result = _sampling_arrange(20, 40, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 100 {:?}", result);
+    // let result = _sampling_arrange(5, 80, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 20{:?}", result);
+    // let result = _sampling_arrange(10, 80, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 50 {:?}", result);
+    // let result = _sampling_arrange(20, 80, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
+    // println!("pattern code 100 {:?}", result);
 }
 
 
@@ -256,24 +287,24 @@ fn _sampling_degree_distribution() ->HashMap<u64,u64> {
         vtx_distribution.insert(i as u64, count);
 
     }
-    for i in 0..22u8 {
-        let edges = GRAPH.get_all_edges(Some(&vec![i])).count();
-        let edges = GRAPH.get_all_edges(Some(&vec![i]));
-        let mut label_set = HashSet::new();
-        let mut label_set2 = HashSet::new();
-        for i in edges {
-            let label = GRAPH.get_vertex(i.get_src_id()).unwrap().get_label();
-            let label2 = GRAPH.get_vertex(i.get_dst_id()).unwrap().get_label();
+    // for i in 0..22u8 {
+    //     let edges = GRAPH.get_all_edges(Some(&vec![i])).count();
+    //     let edges = GRAPH.get_all_edges(Some(&vec![i]));
+    //     let mut label_set = HashSet::new();
+    //     let mut label_set2 = HashSet::new();
+    //     for i in edges {
+    //         let label = GRAPH.get_vertex(i.get_src_id()).unwrap().get_label();
+    //         let label2 = GRAPH.get_vertex(i.get_dst_id()).unwrap().get_label();
 
-            if !label_set.contains(&label) {
-                label_set.insert(label);
-            }
-            if !label_set2.contains(&label2) {
-                label_set2.insert(label2);
-            }
-        }
-        println!("edge label {:?}, src_label {:?}, dst_label {:?}",i, label_set, label_set2);
-    }
+    //         if !label_set.contains(&label) {
+    //             label_set.insert(label);
+    //         }
+    //         if !label_set2.contains(&label2) {
+    //             label_set2.insert(label2);
+    //         }
+    //     }
+    //     println!("edge label {:?}, src_label {:?}, dst_label {:?}",i, label_set, label_set2);
+    // }
     vtx_distribution
 }
 
@@ -438,7 +469,7 @@ fn _sampling_arrange(sample_rate: u64, area_num: u64, pattern: Vec<Vec<String>>)
         // select area
         for i in 0..13u8 {
             let confi = JobConf::new("conf1");
-            let start_num = 1+ area_num * vtx_distribution[&(i as u64)] / total_num;
+            let start_num = 1+ area_num /13;
             let mut times = 0;
             let mut start_list = _sampling_start_vertex_alpha(confi, i).expect("Run Job Error!");
             while let Some(Ok(data)) = start_list.next() {

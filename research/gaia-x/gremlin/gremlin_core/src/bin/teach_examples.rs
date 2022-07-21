@@ -26,15 +26,19 @@ use structopt::StructOpt;
 use std::fmt::Debug;
 use pegasus::errors::{BuildJobError, JobSubmitError, SpawnJobError, StartupError};
 use graph_store::graph_db::Direction;
-
 use std::time::Instant;
 
 use rand;
 use rand::Rng;
 
 use std::fs::File;
-use std::io::prelude::*;
+use std::io::{prelude::*, BufReader};
 
+#[macro_use]
+extern crate lazy_static;
+lazy_static! {
+    static ref VERTEXSET: Vec<u64> = _sampling_src(5, 20);
+}
 #[derive(Debug, Clone, StructOpt, Default)]
 pub struct Config {
     #[structopt(short = "s", long = "servers")]
@@ -70,6 +74,12 @@ fn main() {
     // _sampling_degree_distribution();
 
     _test_pattern_mining();
+
+    
+    // _test_pattern_table_generating();
+
+    // _test_pattern_decode_plus_generating();
+
     // _test_pattern_generate();
     let end_full = Instant::now();
     println!("time cost: {:?}",end_full.duration_since(start_full));
@@ -92,7 +102,7 @@ fn _test_pattern_generate() {
 
 }
 
-// done
+// not done
 fn _test_pattern_mining() {
 
     let mut f = std::fs::File::create("sampling_result.txt").unwrap();
@@ -101,7 +111,7 @@ fn _test_pattern_mining() {
     G1.push(vec![vec![1,1],vec![12,2]]);
     G1.push(vec![vec![2,1],vec![]]);
     let mut str_info1: Vec<String> = Vec::new();
-    let res = _pattern_generate(G1);
+    let res = _pattern_generate(G1.clone());
     for i in res.split("==") {
         str_info1.push(i.to_string());
     }
@@ -111,7 +121,7 @@ fn _test_pattern_mining() {
     G2.push(vec![vec![1,1],vec![12,2,15,0]]);
     G2.push(vec![vec![2,1],vec![15,0]]);
     let mut str_info2: Vec<String> = Vec::new();
-    let res = _pattern_generate(G2);
+    let res = _pattern_generate(G2.clone());
     for i in res.split("==") {
         str_info2.push(i.to_string());
     }
@@ -121,10 +131,10 @@ fn _test_pattern_mining() {
     G3.push(vec![vec![1,1],vec![12,3,12,2]]);
     G3.push(vec![vec![2,1],vec![12,3]]);
     G3.push(vec![vec![3,1],vec![]]);
-    let mut str_info3: Vec<String> = Vec::new();
-    let res = _pattern_generate(G3);
+    let mut str_infoG3: Vec<String> = Vec::new();
+    let res = _pattern_generate(G3.clone());
     for i in res.split("==") {
-        str_info3.push(i.to_string());
+        str_infoG3.push(i.to_string());
     }
 
     // message change to comment
@@ -133,10 +143,112 @@ fn _test_pattern_mining() {
     G4.push(vec![vec![1,2],vec![0,2]]);
     G4.push(vec![vec![2,1],vec![11,3]]);
     G4.push(vec![vec![3,9],vec![]]);
+    let mut str_infoG4: Vec<String> = Vec::new();
+    let res = _pattern_generate(G4.clone());
+    for i in res.split("==") {
+        str_infoG4.push(i.to_string());
+    }
+
+
+    let mut BI3: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI3.push(vec![vec![0,8],vec![]]);
+    BI3.push(vec![vec![1,9],vec![17,0]]);
+    BI3.push(vec![vec![2,1],vec![11,1]]);
+    BI3.push(vec![vec![3,4],vec![6,2,5,4]]);
+    BI3.push(vec![vec![4,3],vec![]]);
+    BI3.push(vec![vec![5,2],vec![3,4,1,6]]);
+    BI3.push(vec![vec![6,7],vec![21,7]]);
+    BI3.push(vec![vec![7,6],vec![]]);
+    let mut str_info3: Vec<String> = Vec::new();
+    let res = _pattern_generate(BI3.clone());
+    for i in res.split("==") {
+        str_info3.push(i.to_string());
+    }
+
+
+    let mut BI4: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI4.push(vec![vec![0,8],vec![]]);
+    BI4.push(vec![vec![1,9],vec![17,0]]);
+    BI4.push(vec![vec![2,1],vec![11,1]]);
+    BI4.push(vec![vec![3,4],vec![6,2]]);
     let mut str_info4: Vec<String> = Vec::new();
-    let res = _pattern_generate(G4);
+    let res = _pattern_generate(BI4.clone());
     for i in res.split("==") {
         str_info4.push(i.to_string());
+    }
+
+
+    let mut BI5: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI5.push(vec![vec![0,1],vec![13,1]]);
+    BI5.push(vec![vec![1,2],vec![0,2,1,3]]);
+    BI5.push(vec![vec![2,1],vec![]]);
+    BI5.push(vec![vec![3,7],vec![]]);
+    BI5.push(vec![vec![4,2],vec![3,1]]);
+    let mut str_info5: Vec<String> = Vec::new();
+    let res = _pattern_generate(BI5.clone());
+    for i in res.split("==") {
+        str_info5.push(i.to_string());
+    }
+
+
+    let mut BI6: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI6.push(vec![vec![0,1],vec![]]);
+    BI6.push(vec![vec![1,7],vec![]]);
+    BI6.push(vec![vec![2,2],vec![1,0,0,1]]);
+    BI6.push(vec![vec![3,2],vec![13,2]]);
+    let mut str_info6: Vec<String> = Vec::new();
+    let res = _pattern_generate(BI6.clone());
+    for i in res.split("==") {
+        str_info6.push(i.to_string());
+    }
+
+
+    let mut BI7: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI7.push(vec![vec![0,2],vec![3,2,1,3]]);
+    BI7.push(vec![vec![1,7],vec![]]);
+    BI7.push(vec![vec![2,2],vec![1,1]]);
+    BI7.push(vec![vec![3,7],vec![]]);
+    let mut str_info7: Vec<String> = Vec::new();
+    let res = _pattern_generate(BI7.clone());
+    for i in res.split("==") {
+        str_info7.push(i.to_string());
+    }
+
+
+    let mut BI8: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI8.push(vec![vec![0,1],vec![1,10]]);
+    BI8.push(vec![vec![1,7],vec![]]);
+    BI8.push(vec![vec![2,2],vec![0,0,1,1]]);
+    let mut str_info8: Vec<String> = Vec::new();
+    let res = _pattern_generate(BI8.clone());
+    for i in res.split("==") {
+        str_info8.push(i.to_string());
+    }
+
+
+    let mut BI9: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI9.push(vec![vec![0,1],vec![]]);
+    BI9.push(vec![vec![1,3],vec![0,0]]);
+    BI9.push(vec![vec![2,2],vec![3,1]]);
+    let mut str_info9: Vec<String> = Vec::new();
+    let res = _pattern_generate(BI9.clone());
+    for i in res.split("==") {
+        str_info9.push(i.to_string());
+    }
+
+    let mut BI10: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI10.push(vec![vec![0,8],vec![]]);
+    BI10.push(vec![vec![1,9],vec![17,0]]);
+    BI10.push(vec![vec![2,1],vec![11,1,12,3]]);
+    BI10.push(vec![vec![3,1],vec![12,2]]);
+    BI10.push(vec![vec![4,2],vec![0,2,1,5,1,6]]);
+    BI10.push(vec![vec![5,7],vec![]]);
+    BI10.push(vec![vec![6,7],vec![21,7]]);
+    BI10.push(vec![vec![7,6],vec![]]);
+    let mut str_info10: Vec<String> = Vec::new();
+    let res = _pattern_generate(BI10.clone());
+    for i in res.split("==") {
+        str_info10.push(i.to_string());
     }
 
     let mut BI11: Vec<Vec<Vec<u64>>> =Vec::new();
@@ -148,9 +260,23 @@ fn _test_pattern_mining() {
     BI11.push(vec![vec![5,1],vec![11,2,12,6]]);
     BI11.push(vec![vec![6,1],vec![11,3]]);
     let mut str_info11: Vec<String> = Vec::new();
-    let res = _pattern_generate(BI11);
+    let res = _pattern_generate(BI11.clone());
     for i in res.split("==") {
         str_info11.push(i.to_string());
+    }
+
+    let mut BI11_1: Vec<Vec<Vec<u64>>> =Vec::new();
+    BI11_1.push(vec![vec![0,8],vec![]]);
+    BI11_1.push(vec![vec![1,9],vec![17,0]]);
+    BI11_1.push(vec![vec![2,9],vec![17,0]]);
+    BI11_1.push(vec![vec![3,9],vec![17,0]]);
+    BI11_1.push(vec![vec![4,1],vec![11,1,12,5]]);
+    BI11_1.push(vec![vec![5,1],vec![11,2,12,6]]);
+    BI11_1.push(vec![vec![6,1],vec![11,3,12,4]]);
+    let mut str_info11_1: Vec<String> = Vec::new();
+    let res = _pattern_generate(BI11_1.clone());
+    for i in res.split("==") {
+        str_info11_1.push(i.to_string());
     }
 
     let mut BI12: Vec<Vec<Vec<u64>>> =Vec::new();
@@ -158,30 +284,87 @@ fn _test_pattern_mining() {
     BI12.push(vec![vec![1,2],vec![0,0,3,2]]);
     BI12.push(vec![vec![2,3],vec![]]);
     let mut str_info12: Vec<String> = Vec::new();
-    let res = _pattern_generate(BI12);
+    let res = _pattern_generate(BI12.clone());
     for i in res.split("==") {
         str_info12.push(i.to_string());
     }
+
+    let mut T1: Vec<Vec<Vec<u64>>> =Vec::new();
+    T1.push(vec![vec![0,1],vec![12,1,12,2]]);
+    T1.push(vec![vec![1,1],vec![12,2]]);
+    T1.push(vec![vec![2,1],vec![]]);
+    let mut str_infoT1: Vec<String> = Vec::new();
+    let res = _pattern_generate(T1);
+    for i in res.split("==") {
+        str_infoT1.push(i.to_string());
+    }
+
+    let mut T2: Vec<Vec<Vec<u64>>> =Vec::new();
+    T2.push(vec![vec![0,12],vec![]]);
+    T2.push(vec![vec![1,1],vec![15,0]]);
+    T2.push(vec![vec![2,1],vec![15,0]]);
+    let mut str_infoT2: Vec<String> = Vec::new();
+    let res = _pattern_generate(T2);
+    for i in res.split("==") {
+        str_infoT2.push(i.to_string());
+    }
+
+    let mut T3: Vec<Vec<Vec<u64>>> =Vec::new();
+    T3.push(vec![vec![0,12],vec![]]);
+    T3.push(vec![vec![1,1],vec![]]);
+    T3.push(vec![vec![2,1],vec![15,0,12,1]]);
+    let mut str_infoT3: Vec<String> = Vec::new();
+    let res = _pattern_generate(T3);
+    for i in res.split("==") {
+        str_infoT3.push(i.to_string());
+    }
+
+    let mut T11_1: Vec<Vec<Vec<u64>>> =Vec::new();
+    T11_1.push(vec![vec![0,8],vec![]]);
+    T11_1.push(vec![vec![1,9],vec![17,0]]);
+    T11_1.push(vec![vec![2,9],vec![17,0]]);
+    T11_1.push(vec![vec![3,9],vec![17,0]]);
+    T11_1.push(vec![vec![4,1],vec![11,1,12,5]]);
+    T11_1.push(vec![vec![5,1],vec![11,2,12,6]]);
+    T11_1.push(vec![vec![6,1],vec![11,3,12,4]]);
+    let mut str_infoT11_1: Vec<String> = Vec::new();
+    let res = _pattern_generate(T11_1.clone());
+    for i in res.split("==") {
+        str_infoT11_1.push(i.to_string());
+    }
+
     
     // Experiment
-    let area = vec![20,40,80,160];
-    let rate = vec![10,40,20,10,5];
+    let area = vec![20];
+    let rate = vec![5];
     let mut string_to_pattern = HashMap::new();
-    string_to_pattern.insert("_1_2_13_0_1_0_1_9_11_0_0_0_1_9_11_0_1_0_2_1_0_0_0_0_".to_string(), "G4");
-    string_to_pattern.insert("_1_1_12_0_0_1_1_1_12_1_2_0_1_1_12_1_2_1_".to_string(), "G1");
-    string_to_pattern.insert("_1_1_12_0_0_1_1_1_12_1_2_0_1_1_12_1_2_1_1_9_11_0_0_1_1_9_11_0_1_2_1_9_11_0_2_0_9_8_17_0_0_0_9_8_17_0_1_0_9_8_17_0_2_0_".to_string(), "B11");
-    string_to_pattern.insert("_1_12_15_0_0_0_1_12_15_0_1_0_1_1_12_1_1_0_".to_string(), "G2");
-    string_to_pattern.insert("_2_1_0_0_0_0_2_3_3_0_0_0_".to_string(), "B12");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_infoG4.clone())), "G4");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info1.clone())), "G1");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_infoT1.clone())), "T1");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_infoT2.clone())), "T2");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_infoT3.clone())), "T3");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_infoT11_1.clone())), "T11_1");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info11.clone())), "B11");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info11_1.clone())), "B11_1");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info2.clone())), "G2");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info12.clone())), "B12");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info3.clone())), "B3");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info4.clone())), "B4");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info5.clone())), "B5");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info6.clone())), "B6");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info7.clone())), "B7");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info8.clone())), "B8");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info9.clone())), "B9");
+    string_to_pattern.insert(_pattern_generate_2side(_decode_pattern(str_info10.clone())), "B10");
+
+
 
     for i in area {
         for j in rate.clone() {
-            f.write("\n area ".as_bytes());
-            f.write(i.to_string().as_bytes());
-            f.write("\n".as_bytes());
-            let result = _sampling_arrange(j, i, vec![str_info1.clone(),str_info2.clone(),str_info4.clone(),str_info11.clone(),str_info12.clone()]);
-            println!("pattern code 20{:?}", result);
             f.write("\n rate ".as_bytes());
             f.write(j.to_string().as_bytes());
+            let result = _sampling_arrange(j, i, vec![str_info1.clone(),str_info12.clone()]);
+            // println!("pattern code {:?}:{:?}", j, result);
             for i in result.keys() {
                 f.write(":  ".as_bytes());
                 f.write(string_to_pattern[i].as_bytes());
@@ -210,6 +393,26 @@ fn _test_pattern_mining() {
 }
 
 
+// done
+fn _test_pattern_decode_plus_generating () {
+
+    let mut G1: Vec<Vec<Vec<u64>>> =Vec::new();
+    G1.push(vec![vec![0,1],vec![12,1]]);
+    G1.push(vec![vec![1,1],vec![12,2]]);
+    G1.push(vec![vec![2,1],vec![]]);
+    let mut str_info1: Vec<String> = Vec::new();
+    let res = _pattern_generate(G1);
+    for i in res.split("==") {
+        str_info1.push(i.to_string());
+    }
+    let res1 = _decode_pattern(str_info1);
+    let res2 = _pattern_generate_2side(res1.clone());
+    println!("1: {:?}",res);
+    println!("2: {:?}",res2);
+    println!("mid: {:?}", res1);
+}
+
+
 fn _sampling_all_vertex(conf: JobConf) -> Result<ResultStream<u64>, JobSubmitError> {
     pegasus::run(conf, move || {
         move |input, output| {
@@ -225,6 +428,7 @@ fn _sampling_all_vertex(conf: JobConf) -> Result<ResultStream<u64>, JobSubmitErr
         }
     })
 }
+
 fn _sampling_start_vertex(conf: JobConf, area_num: u64) -> Result<ResultStream<u64>, JobSubmitError> {
     let mut rng = rand::thread_rng();
     let partition = (GRAPH.get_all_vertices(None).count() as u64)/area_num as u64;
@@ -327,17 +531,38 @@ fn _sampling_adjvertex(conf: JobConf, src: &Vec<u64>) -> Result<ResultStream<Vec
 }
 
 
-fn _sampling_invertex(conf: JobConf, src: &Vec<u64>) -> Result<ResultStream<u64>, JobSubmitError> {
+
+fn _counting_pattern_indepth2_O2(conf: JobConf, src: &Vec<u64>, vtxsrc: &'static Vec<u64>) -> Result<ResultStream<String>, JobSubmitError> {
     pegasus::run(conf, move || {
         let src = src.clone();
         move |input, output| {
             input.input_from(src.into_iter())?
-            .flat_map(|v_id| {
-                let adj_vertices = GRAPH.get_adj_vertices(v_id as usize, None, Direction::Incoming);
-                Ok(adj_vertices.map(move |v| {
-                    v.get_id() as u64
-                }))
-            })?
+                .flat_map(move |v_id| {
+                    let label = GRAPH.get_vertex(v_id as usize).unwrap().get_label();
+                    let mut v1_label =label[0];
+                    if label[1]!= 255 {
+                        v1_label = label[1];
+                    }
+                    let adj_vertices = GRAPH.get_adj_edges(v_id as usize, None, Direction::Outgoing);
+                    Ok(adj_vertices.map(move |v| {
+                        let mut path = vec![];
+                        let label2 = GRAPH.get_vertex(v.get_other_id() as usize).unwrap().get_label();
+                        let mut v2_label =label2[0];
+                        if label2[1]!= 255 {
+                            v2_label = label[1];
+                        }
+    
+                        path.push(v_id);
+                        path.push(v1_label as u64);
+                        path.push(v.get_label() as u64);
+                        path.push(v.get_other_id() as u64);
+                        path.push(v2_label as u64);
+                        let result = _generate_code_in_pegasusOO(vtxsrc.to_vec(), path);
+                        result
+                    }))
+                })?
+                .filter(|result| {
+                    Ok(result != "")})?
             
             .sink_into(output)
         }
@@ -345,89 +570,179 @@ fn _sampling_invertex(conf: JobConf, src: &Vec<u64>) -> Result<ResultStream<u64>
 }
 
 
-fn _counting_pattern_indepth2_O(conf: JobConf, src: &Vec<u64>) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
+fn _counting_pattern_indepth2_OO2(conf: JobConf, src: &Vec<u64>, vtxsrc: &'static Vec<u64>) -> Result<ResultStream<String>, JobSubmitError> {
     pegasus::run(conf, move || {
         let src = src.clone();
         move |input, output| {
             input.input_from(src.into_iter())?
                 .flat_map(|v_id| {
+                    let label = GRAPH.get_vertex(v_id as usize).unwrap().get_label();
+                    let mut v1_label =label[0];
+                    if label[1]!= 255 {
+                        v1_label = label[1];
+                    }
                     let adj_vertices = GRAPH.get_adj_edges(v_id as usize, None, Direction::Outgoing);
                     Ok(adj_vertices.map(move |v| {
                         let mut path = vec![];
+                        let label2 = GRAPH.get_vertex(v.get_other_id() as usize).unwrap().get_label();
+                        let mut v2_label =label2[0];
+                        if label2[1]!= 255 {
+                            v2_label = label[1];
+                        }
     
                         path.push(v_id);
+                        path.push(v1_label as u64);
                         path.push(v.get_label() as u64);
                         path.push(v.get_other_id() as u64);
+                        path.push(v2_label as u64);
                         path
                     }))
                 })?
+                .filter(move |result| {
+                    Ok(vtxsrc.to_vec().contains(&result[3]))})?
             
-            .sink_into(output)
-        }
-    })
-}
+                .flat_map( move |path2| {
 
-
-fn _counting_pattern_indepth2_OO(conf: JobConf, src: &Vec<u64>) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
-    pegasus::run(conf, move || {
-        let src = src.clone();
-        move |input, output| {
-            input.input_from(src.into_iter())?
-                .flat_map(|v_id| {
-                    let adj_vertices = GRAPH.get_adj_edges(v_id as usize, None, Direction::Outgoing);
-                    Ok(adj_vertices.map(move |v| {
-                        let mut path = vec![];
-    
-                        path.push(v_id);
-                        path.push(v.get_label() as u64);
-                        path.push(v.get_other_id() as u64);
-                        path
-                    }))
-                })?
-                .flat_map( |path2| {
-
-                    let adj_vertices = GRAPH.get_adj_edges(path2[2] as usize, None, Direction::Outgoing);
+                    let adj_vertices = GRAPH.get_adj_edges(path2[3] as usize, None, Direction::Outgoing);
                     Ok(adj_vertices.map(move |v| {
                         let mut path = path2.clone();
+                        let label2 = GRAPH.get_vertex(v.get_other_id()).unwrap().get_label();
+                        let mut v2_label =label2[0];
+                        if label2[1]!= 255 {
+                            v2_label = label2[1];
+                        }
                         path.push(v.get_label() as u64);
                         path.push(v.get_other_id()as u64);
+                        path.push(v2_label as u64);
                         path
                     }))
 
-                } )?
+
+                })?
+                .filter(move |result| {
+                    Ok(vtxsrc.to_vec().contains(&result[6]) )})?
+                .map(move |vid| {
+                    let result = _generate_code_in_pegasusOO(vtxsrc.to_vec(), vid);
+                    Ok(result)
+                })?
             
             .sink_into(output)
         }
     })
 }
 
-fn _counting_pattern_indepth2_IO(conf: JobConf, src: &Vec<u64>) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
+
+fn _counting_pattern_indepth2_OI2(conf: JobConf, src: &Vec<u64>, vtxsrc: &'static Vec<u64>) -> Result<ResultStream<String>, JobSubmitError> {
     pegasus::run(conf, move || {
         let src = src.clone();
         move |input, output| {
             input.input_from(src.into_iter())?
                 .flat_map(|v_id| {
+                    let label = GRAPH.get_vertex(v_id as usize).unwrap().get_label();
+                    let mut v1_label =label[0];
+                    if label[1]!= 255 {
+                        v1_label = label[1];
+                    }
+                    let adj_vertices = GRAPH.get_adj_edges(v_id as usize, None, Direction::Outgoing);
+                    Ok(adj_vertices.map(move |v| {
+                        let mut path = vec![];
+                        let label2 = GRAPH.get_vertex(v.get_other_id() as usize).unwrap().get_label();
+                        let mut v2_label =label2[0];
+                        if label2[1]!= 255 {
+                            v2_label = label[1];
+                        }
+    
+                        path.push(v_id);
+                        path.push(v1_label as u64);
+                        path.push(v.get_label() as u64);
+                        path.push(v.get_other_id() as u64);
+                        path.push(v2_label as u64);
+                        path
+                    }))
+                })?
+                .filter(move |result| {
+                    Ok(vtxsrc.to_vec().contains(&result[3]))})?
+            
+                .flat_map( move |path2| {
+
+                    let adj_vertices = GRAPH.get_adj_edges(path2[3] as usize, None, Direction::Incoming);
+                    Ok(adj_vertices.map(move |v| {
+                        let mut path = path2.clone();
+                        let label2 = GRAPH.get_vertex(v.get_other_id()).unwrap().get_label();
+                        let mut v2_label =label2[0];
+                        if label2[1]!= 255 {
+                            v2_label = label2[1];
+                        }
+                        path.push(v.get_label() as u64);
+                        path.push(v.get_other_id()as u64);
+                        path.push(v2_label as u64);
+                        let result = _generate_code_in_pegasusOI(vtxsrc.to_vec(), path);
+                        result
+                    }))
+
+
+                })?
+                .filter(|result| {
+                    Ok(result != "")})?
+            
+            .sink_into(output)
+        }
+    })
+}
+
+
+fn _counting_pattern_indepth2_IO2(conf: JobConf, src: &Vec<u64>, vtxsrc: &'static Vec<u64>) -> Result<ResultStream<String>, JobSubmitError> {
+    pegasus::run(conf, move || {
+        let src = src.clone();
+        move |input, output| {
+            input.input_from(src.into_iter())?
+                .flat_map(|v_id| {
+                    let label = GRAPH.get_vertex(v_id as usize).unwrap().get_label();
+                    let mut v1_label =label[0];
+                    if label[1]!= 255 {
+                        v1_label = label[1];
+                    }
                     let adj_vertices = GRAPH.get_adj_edges(v_id as usize, None, Direction::Incoming);
                     Ok(adj_vertices.map(move |v| {
                         let mut path = vec![];
+                        let label2 = GRAPH.get_vertex(v.get_other_id() as usize).unwrap().get_label();
+                        let mut v2_label =label2[0];
+                        if label2[1]!= 255 {
+                            v2_label = label[1];
+                        }
     
                         path.push(v_id);
+                        path.push(v1_label as u64);
                         path.push(v.get_label() as u64);
                         path.push(v.get_other_id() as u64);
+                        path.push(v2_label as u64);
                         path
                     }))
                 })?
-                .flat_map( |path2| {
+                .filter(move |result| {
+                    Ok(vtxsrc.to_vec().contains(&result[3]))})?
+            
+                .flat_map( move |path2| {
 
-                    let adj_vertices = GRAPH.get_adj_edges(path2[2] as usize, None, Direction::Outgoing);
+                    let adj_vertices = GRAPH.get_adj_edges(path2[3] as usize, None, Direction::Outgoing);
                     Ok(adj_vertices.map(move |v| {
                         let mut path = path2.clone();
+                        let label2 = GRAPH.get_vertex(v.get_other_id()).unwrap().get_label();
+                        let mut v2_label =label2[0];
+                        if label2[1]!= 255 {
+                            v2_label = label2[1];
+                        }
                         path.push(v.get_label() as u64);
                         path.push(v.get_other_id()as u64);
-                        path
+                        path.push(v2_label as u64);
+                        let result = _generate_code_in_pegasusIO(vtxsrc.to_vec(), path);
+                        result
                     }))
 
-                } )?
+
+                })?
+                .filter(|result| {
+                    Ok(result != "")})?
             
             .sink_into(output)
         }
@@ -435,38 +750,7 @@ fn _counting_pattern_indepth2_IO(conf: JobConf, src: &Vec<u64>) -> Result<Result
 }
 
 
-fn _counting_pattern_indepth2_OI(conf: JobConf, src: &Vec<u64>) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
-    pegasus::run(conf, move || {
-        let src = src.clone();
-        move |input, output| {
-            input.input_from(src.into_iter())?
-                .flat_map(|v_id| {
-                    let adj_vertices = GRAPH.get_adj_edges(v_id as usize, None, Direction::Outgoing);
-                    Ok(adj_vertices.map(move |v| {
-                        let mut path = vec![];
-    
-                        path.push(v_id);
-                        path.push(v.get_label() as u64);
-                        path.push(v.get_other_id() as u64);
-                        path
-                    }))
-                })?
-                .flat_map( |path2| {
 
-                    let adj_vertices = GRAPH.get_adj_edges(path2[2] as usize, None, Direction::Incoming);
-                    Ok(adj_vertices.map(move |v| {
-                        let mut path = path2.clone();
-                        path.push(v.get_label() as u64);
-                        path.push(v.get_other_id()as u64);
-                        path
-                    }))
-
-                } )?
-            
-            .sink_into(output)
-        }
-    })
-}
 // pattern mining
 // src: 此次faltmap的点id，path：按gid排列的点id，target——label：拓展边label
 fn _mining_adjvertex(conf: JobConf, src_gid: u64, target_label: u8, target_gid: u64, path: &Vec<Vec<u64>>, dir: u64) -> Result<ResultStream<Vec<u64>>, JobSubmitError> {
@@ -489,7 +773,6 @@ fn _mining_adjvertex(conf: JobConf, src_gid: u64, target_label: u8, target_gid: 
 
                         }
                         else {
-                            
                             path = vec![0];
                         }
                     }
@@ -522,8 +805,7 @@ fn _sampling_arrange(sample_rate: u64, area_num: u64, pattern: Vec<Vec<String>>)
         while let Some(Ok(data)) = all_vertices.next() {
             sampled.insert(data);
             let sample_label = GRAPH.get_vertex(data as usize).unwrap().get_label();
-            let v1: DefaultId = LDBCVertexParser::to_global_id(data as usize, 0);
-            mut_graph.add_vertex(v1, sample_label);
+            mut_graph.add_vertex(data as usize, sample_label);
         }
     }
     else {
@@ -555,18 +837,23 @@ fn _sampling_arrange(sample_rate: u64, area_num: u64, pattern: Vec<Vec<String>>)
         // select area
         for i in 0..13u8 {
             let confi = JobConf::new("conf1");
-            let start_num = 1+ area_num * vtx_distribution[&(i as u64)] / total_num;
+            let start_num = 1+ area_num/13;
             let mut times = 0;
             let mut start_list = _sampling_start_vertex_alpha(confi, i).expect("Run Job Error!");
             while let Some(Ok(data)) = start_list.next() {
                 if !sampled.contains(&data){
                     sampled.insert(data);
                     let sample_label = GRAPH.get_vertex(data as usize).unwrap().get_label();
+                    if bound_table[sample_label[0]as usize] == 0 {
+                        continue;
+                    }
                     bound_table[sample_label[0]as usize] = bound_table[sample_label[0] as usize] -1;
                     if sample_label[1] != 255u8 {
+                        if bound_table[sample_label[1]as usize] == 0 {
+                            continue;
+                        }
                         bound_table[sample_label[1]as usize] = bound_table[sample_label[1] as usize] -1;
                     }
-                    let v1: DefaultId = LDBCVertexParser::to_global_id(data as usize, 0);
                     mut_graph.add_vertex(data as usize, sample_label);
                     buffer.push(data);
                     if times>start_num {
@@ -614,10 +901,290 @@ fn _sampling_arrange(sample_rate: u64, area_num: u64, pattern: Vec<Vec<String>>)
                     }
                     mut_graph.add_vertex(sample_id as usize, sample_label);
                     
-                    let v2: DefaultId = LDBCVertexParser::to_global_id(src_id as usize, 0);
                     let src_label = GRAPH.get_vertex(src_id as usize).unwrap().get_label();
                     if !sampled.contains(&src_id) && !(sampled.len() as u64 >= sample_num){
-                        mut_graph.add_vertex(v2, src_label);
+                        mut_graph.add_vertex(src_id as usize, src_label);
+                    }
+    
+                    buffer.push(sample_id);
+                }
+                // println!("{:?}", data);
+            }
+            remain = 0;
+            for i in new_bound.clone() {
+                remain = remain +i;
+            }
+        }
+    }
+    
+
+    
+    for i in sampled.clone() {
+        // edge add
+        let mut adjout = GRAPH.get_adj_edges(i as usize, None, Direction::Outgoing);
+        while let Some(data) = adjout.next() {
+            let label = data.get_label();
+            let dst_id: u64 = data.get_dst_id() as u64;
+            if sampled.contains(&dst_id) {
+                mut_graph.add_edge(i as usize, dst_id as usize, label);
+            }
+        }
+    }
+    let schema_file = "data/schema.json";
+    let schema =
+            LDBCGraphSchema::from_json_file(schema_file).expect("Read graph schema error!");
+    let graphdb = &mut_graph.into_graph(schema);
+
+    for i in 0..13 {
+        let count = graphdb.get_all_vertices(Some(&vec![i as u8])).count();
+        let count2 = GRAPH.get_all_vertices(Some(&vec![i as u8])).count();
+        println!("After Sampling label: {:?}, count: {:?}",i,count);
+        println!("Global graph label: {:?}, count: {:?}",i,count2);
+    }
+
+
+    // pattern mining
+    let mining_result = _pattern_mining(pattern.clone(), graphdb);
+
+    println!("true: cardinality: \n {:?}",mining_result);
+    // mining_result
+
+    // pattern cardinality estimating
+    let mut pattern_idx: HashMap<String, u64> = HashMap::new();
+    let mut pattern_count = vec![0;1024];
+    let mut pattern_table: HashMap<String, u64> = HashMap::new();
+    let srcvtx = graphdb.get_all_vertices(None);
+    let mut vtxsrc = Vec::new();
+    for i in srcvtx {
+        vtxsrc.push(i.get_id() as u64);
+    }
+
+    // let mut count =0;
+    // let mut thousand_count =0;
+
+    // let confPCount = JobConf::new("confOI2");
+    // let start_flat = Instant::now();
+
+    // let mut counting_patternOI = _counting_pattern_indepth2_OI2(confPCount.clone(), &vtxsrc, &VERTEXSET).expect("Run Job Error!");
+    // while let Some(data) = counting_patternOI.next() {
+    //     let code = data.unwrap();
+    //     if pattern_idx.contains_key(&(code)) {
+    //         pattern_count[pattern_idx[&code] as usize] +=1;
+    //     }
+    //     else {
+    //         pattern_idx.insert(code.clone(), pattern_idx.len() as u64);
+    //         pattern_count[pattern_idx[&code] as usize] +=1;
+    //     }
+    //     count = count +1;
+    //     if count==100000 {
+    //         thousand_count = thousand_count +1;
+    //         count = 0;
+    //         println!("count {:?} 00000",thousand_count);
+    //     }
+    // }
+    
+
+    // let mut counting_patternIO = _counting_pattern_indepth2_IO2(confPCount.clone(), &vtxsrc, &VERTEXSET).expect("Run Job Error!");
+    // while let Some(data) = counting_patternIO.next() {
+    //     let code = data.unwrap();
+    //     if pattern_idx.contains_key(&(code)) {
+    //         pattern_count[pattern_idx[&code] as usize] +=1;
+    //     }
+    //     else {
+    //         pattern_idx.insert(code.clone(), pattern_idx.len() as u64);
+    //         pattern_count[pattern_idx[&code] as usize] +=1;
+    //     }
+    //     count = count +1;
+    //     if count==100000 {
+    //         thousand_count = thousand_count +1;
+    //         count = 0;
+    //         println!("count {:?} 00000",thousand_count);
+    //     }
+    // }
+    
+
+    // let mut counting_patternOO = _counting_pattern_indepth2_OO2(confPCount.clone(), &vtxsrc, &VERTEXSET).expect("Run Job Error!");
+    // while let Some(data) = counting_patternOO.next() {
+    //     let code = data.unwrap();
+    //     if pattern_idx.contains_key(&(code)) {
+    //         pattern_count[pattern_idx[&code] as usize] +=1;
+    //     }
+    //     else {
+    //         pattern_idx.insert(code.clone(), pattern_idx.len() as u64);
+    //         pattern_count[pattern_idx[&code] as usize] +=1;
+    //     }
+    //     count = count +1;
+    //     if count==100000 {
+    //         thousand_count = thousand_count +1;
+    //         count = 0;
+    //         println!("count {:?} 00000",thousand_count);
+    //     }
+    // }
+    
+
+    // let mut counting_patternO = _counting_pattern_indepth2_O2(confPCount.clone(), &vtxsrc, &VERTEXSET).expect("Run Job Error!");
+    // while let Some(data) = counting_patternO.next() {
+    //     let code = data.unwrap();
+    //     if pattern_idx.contains_key(&(code)) {
+    //         pattern_count[pattern_idx[&code] as usize] +=1;
+    //     }
+    //     else {
+    //         pattern_idx.insert(code.clone(), pattern_idx.len() as u64);
+    //         pattern_count[pattern_idx[&code] as usize] +=1;
+    //     }
+    //     count = count +1;
+    //     if count==100000 {
+    //         thousand_count = thousand_count +1;
+    //         count = 0;
+    //         println!("count {:?} 00000",thousand_count);
+    //     }
+    // }
+    
+
+    // let end_flat = Instant::now();
+    // for i in pattern_idx.keys() {
+    //     pattern_table.insert(i.to_string(), pattern_count[pattern_idx[i] as usize]);
+    //     println!("{:?} {:?}",i.to_string(),pattern_count[pattern_idx[i] as usize]);
+    // }
+    // println!("time cost for counting table: {:?}s",end_flat.duration_since(start_flat));
+
+    let mut f = std::fs::File::open("pattern_table.txt").unwrap();
+    let reader = BufReader::new(f);
+    for line in reader.lines() {
+        let item = line.unwrap();
+        let idx1 = item.find("\"").unwrap();
+        let idx2 = item.find(' ').unwrap()-1;
+        let value = item[idx2+2..item.len()].parse::<u64>().expect("turn u64 err");
+        pattern_table.insert(item[idx1+1..idx2].to_string(), value);
+        // pattern_table
+    }
+
+
+
+    let mut res = HashMap::new();
+    let mut result_vec = Vec::new();
+    for i in 0..3 {
+        res = _pattern_estimation_CEG_vertex_version(graphdb, pattern.clone(), pattern_table.clone(), i, 2);
+        result_vec.push(res.clone());
+    }
+    for i in result_vec {
+        println!("estimation result {:?}", i);
+    }
+    res
+    
+}
+
+
+fn _sampling_src(sample_rate: u64, area_num: u64) -> Vec<u64> {
+
+    let mut sampled = HashSet::new();
+    let mut mut_graph: MutableGraphDB<DefaultId, InternalId> = GraphDBConfig::default().new();
+
+    if sample_rate==100u64 {
+        let conf0 = JobConf::new("conf0");
+        let mut all_vertices = _sampling_all_vertex(conf0).expect("Run Job Error!");
+        while let Some(Ok(data)) = all_vertices.next() {
+            sampled.insert(data);
+            let sample_label = GRAPH.get_vertex(data as usize).unwrap().get_label();
+            mut_graph.add_vertex(data as usize, sample_label);
+        }
+    }
+    else {
+        let vtx_distribution = _sampling_degree_distribution();
+        let mut bound_table: Vec<u64> = Vec::new();
+        let sample_num = (GRAPH.get_all_vertices(None).count() as u64)*sample_rate/100;
+        let total_num = (GRAPH.get_all_vertices(None).count() as u64)*sample_rate/100;
+        println!("to_sample num {:?}", sample_num);
+
+        for i in 0..13u64 {
+            let exist_num = vtx_distribution[&(i)];
+            let min_num = total_num/100;
+            let to_sample = exist_num *sample_rate/100;
+            if min_num > to_sample {
+                if min_num > exist_num {
+                    bound_table.push(exist_num);
+                }
+                else {
+                    bound_table.push(min_num);
+                }
+            }
+            else {
+                bound_table.push(to_sample);
+            }
+        }
+        let conf1 = JobConf::new("conf1");
+
+        let mut buffer = vec![];
+        // select area
+        for i in 0..13u8 {
+            let confi = JobConf::new("conf1");
+            let start_num = 1+ area_num/13;
+            let mut times = 0;
+            let mut start_list = _sampling_start_vertex_alpha(confi, i).expect("Run Job Error!");
+            while let Some(Ok(data)) = start_list.next() {
+                if !sampled.contains(&data){
+                    sampled.insert(data);
+                    let sample_label = GRAPH.get_vertex(data as usize).unwrap().get_label();
+                    if bound_table[sample_label[0]as usize] == 0 {
+                        continue;
+                    }
+                    bound_table[sample_label[0]as usize] = bound_table[sample_label[0] as usize] -1;
+                    if sample_label[1] != 255u8 {
+                        if bound_table[sample_label[1]as usize] == 0 {
+                            continue;
+                        }
+                        bound_table[sample_label[1]as usize] = bound_table[sample_label[1] as usize] -1;
+                    }
+                    mut_graph.add_vertex(data as usize, sample_label);
+                    buffer.push(data);
+                    if times>start_num {
+                        break;
+                    }
+                    times = times+1;
+                }
+                // println!("{:?}", data);
+            }
+        }
+        let mut new_bound = bound_table.clone();
+        let mut remain = 0;
+        for i in new_bound.clone() {
+            remain = remain +i;
+        }
+        while remain>0 {
+    
+            let conf2 = JobConf::new("conf2");
+            if buffer.len() as u64 ==0 {
+                println!("All vertex getted");
+                break;
+            }
+            let mut result2 = _sampling_adjvertex(conf2, &buffer).expect("Run Job Error!");
+            buffer.clear();
+            while let Some(Ok(data)) = result2.next() {
+                let sample_id: u64 = data[1];
+                let src_id: u64 = data[0];
+                
+                let sample_label = GRAPH.get_vertex(sample_id as usize).unwrap().get_label();
+                if !sampled.contains(&sample_id) && new_bound[(sample_label[0]) as usize] >0 && (sample_label[1]== 255 
+                    || (sample_label[1] != 255 && new_bound[sample_label[1] as usize] >0)){
+                    sampled.insert(sample_id);
+    
+                    if new_bound[sample_label[0]as usize] <= 0 {
+                        continue;
+                    }
+                    if sample_label[1]as usize != 255{
+                        if new_bound[sample_label[1]as usize] as u64 <=0{
+                            continue;
+                        }
+                    }
+                    new_bound[sample_label[0]as usize] = new_bound[sample_label[0] as usize] -1;
+                    if sample_label[1] != 255u8 {
+                        new_bound[sample_label[1]as usize] = new_bound[sample_label[1] as usize] -1;
+                    }
+                    mut_graph.add_vertex(sample_id as usize, sample_label);
+                    
+                    let src_label = GRAPH.get_vertex(src_id as usize).unwrap().get_label();
+                    if !sampled.contains(&src_id) && !(sampled.len() as u64 >= sample_num){
+                        mut_graph.add_vertex(src_id as usize, src_label);
                     }
     
                     buffer.push(sample_id);
@@ -648,256 +1215,116 @@ fn _sampling_arrange(sample_rate: u64, area_num: u64, pattern: Vec<Vec<String>>)
     let schema_file = "data/schema.json";
     let schema =
             LDBCGraphSchema::from_json_file(schema_file).expect("Read graph schema error!");
-    let graphdb = &mut_graph.into_graph(schema);
-
-    // for i in 0..13 {
-    //     let count = graphdb.get_all_vertices(Some(&vec![i as u8])).count();
-    //     let count2 = GRAPH.get_all_vertices(Some(&vec![i as u8])).count();
-    //     println!("After Sampling label: {:?}, count: {:?}",i,count);
-    //     println!("Global graph label: {:?}, count: {:?}",i,count2);
-    // }
-    // pattern mining
-    // let mining_result = _pattern_mining(pattern.clone(), graphdb);
-    // mining_result
-
-    // pattern cardinality estimating
-
-    let start_full = Instant::now();
-
-    println!("finish sampling");
-    let confP0 = JobConf::new("conf0");
-    let confP1 = JobConf::new("conf0");
-    let confP2 = JobConf::new("conf0");
-    let confP3 = JobConf::new("conf0");
-    let confQ = JobConf::new("conf0");
-    let mut pattern_table: HashMap<String, u64> = HashMap::new();
+    let graphdb = mut_graph.into_graph(schema);
     let srcvtx = graphdb.get_all_vertices(None);
     let mut vtxsrc = Vec::new();
     for i in srcvtx {
         vtxsrc.push(i.get_id() as u64);
     }
-    println!("start counting");
-    let mut counting_patternO = _counting_pattern_indepth2_O(confP0, &vtxsrc).expect("Run Job Error!");
+    vtxsrc
+}
 
-    let mut counting_patternOO = _counting_pattern_indepth2_OO(confP1, &vtxsrc).expect("Run Job Error!");
 
-    let mut counting_patternOI = _counting_pattern_indepth2_OI(confP2, &vtxsrc).expect("Run Job Error!");
 
-    let mut counting_patternIO = _counting_pattern_indepth2_IO(confP3, &vtxsrc).expect("Run Job Error!");
 
-    let mut count =0;
-    let mut thousand_count =0;
+fn _generate_code_in_pegasusOI(vtxsrc: Vec<u64>, pattern_info: Vec<u64>) -> String {
 
-    while let Some(data) = counting_patternO.next() {
-        let pattern_info = data.unwrap();
-        // println!("pattern info {:?}",pattern_info);
-        // TODO: repair the bug of edge info
-        for i in 0..pattern_info.len()/2+1 {
-            let mut edge_set = Vec::new();
-            let mut src_set = Vec::new();
-            if !vtxsrc.contains(&pattern_info[2*i]) {
-                break;
-            }
-            // generating decode_result
-            let label_vtx = graphdb.get_vertex(2*i).unwrap().get_label();
-            src_set.push(vec![i as u64,label_vtx[0] as u64]);
+    let mut decode_table = Vec::new();
+    let mut code = String::from("");
+    for i in 0..pattern_info.len()/3+1 {
+        let mut edge_set = Vec::new();
+        let mut src_set = Vec::new();
+        if !vtxsrc.contains(&pattern_info[3*i]) {
+            break;
+        }
+        // generating decode_result
+        let label_vtx = pattern_info[i*3+1];
+            src_set.push(vec![i as u64,label_vtx as u64]);
 
-            if i < pattern_info.len()/2 {
-                edge_set.push(pattern_info[2*i+1] as u64);
-                edge_set.push(i as u64);
+        if i < pattern_info.len()/3 {
+            edge_set.push(pattern_info[3*i+2] as u64);
+            edge_set.push((i+1) as u64);
+            if i==0 {
                 edge_set.push(0);
-
-                
             }
-            src_set.push(edge_set);
-            if i== pattern_info.len()/2 {
-                src_set.push(vec![(i+1)as u64,graphdb.get_vertex(2*(i+1)).unwrap().get_label()[0] as u64]);
-                src_set.push(vec![]);
-                let decode_table = vec![src_set];
-                println!("vtx_src: {:?}",decode_table);
-                let code =_pattern_generate_2side(decode_table);
-                if pattern_table.contains_key(&code) {
-                    let mut prev_value = pattern_table.remove(&code).unwrap();
-                    prev_value = prev_value +1;
-                    pattern_table.insert(code, prev_value);
-                }
-                else {
-                    pattern_table.insert(code, 1);
-                }
-                break;
+            else {
+                edge_set.push(1);
             }
         }
-        count = count +1;
-        if count==100000 {
-            thousand_count = thousand_count +1;
-            count = 0;
-            println!("count {:?} 00000",thousand_count);
+        src_set.push(edge_set);
+        decode_table.push(src_set.clone());
+        if i== pattern_info.len()/3 {
+            code =_pattern_generate_2side(decode_table);
+            break;
         }
-
     }
+    code
+}
 
 
-    while let Some(data) = counting_patternOO.next() {
-        let pattern_info = data.unwrap();
-        // println!("pattern info {:?}",pattern_info);
-        for i in 0..pattern_info.len()/2+1 {
-            let mut edge_set = Vec::new();
-            let mut src_set = Vec::new();
-            if !vtxsrc.contains(&pattern_info[2*i]) {
-                break;
-            }
-            // generating decode_result
-            let label_vtx = graphdb.get_vertex(2*i).unwrap().get_label();
-            src_set.push(vec![i as u64,label_vtx[0] as u64]);
+fn _generate_code_in_pegasusIO(vtxsrc: Vec<u64>, pattern_info: Vec<u64>) -> String {
 
-            if i < pattern_info.len()/2 {
-                edge_set.push(pattern_info[2*i+1] as u64);
-                edge_set.push(i as u64);
+    let mut decode_table = Vec::new();
+    let mut code = String::from("");
+    for i in 0..pattern_info.len()/3+1 {
+        let mut edge_set = Vec::new();
+        let mut src_set = Vec::new();
+        if !vtxsrc.contains(&pattern_info[3*i]) {
+            break;
+        }
+        // generating decode_result
+        let label_vtx = pattern_info[i*3+1];
+            src_set.push(vec![i as u64,label_vtx as u64]);
+
+        if i < pattern_info.len()/3 {
+            edge_set.push(pattern_info[3*i+2] as u64);
+            edge_set.push((i+1) as u64);
+            if i==1 {
                 edge_set.push(0);
-
-                
             }
-            src_set.push(edge_set);
-            if i== pattern_info.len()/2 {
-                src_set.push(vec![(i+1)as u64,graphdb.get_vertex(2*(i+1)).unwrap().get_label()[0] as u64]);
-                src_set.push(vec![]);
-                let decode_table = vec![src_set];
-                // println!("vtx_src: {:?}",vtx_src);
-                let code =_pattern_generate_2side(decode_table);
-                if pattern_table.contains_key(&code) {
-                    let mut prev_value = pattern_table.remove(&code).unwrap();
-                    prev_value = prev_value +1;
-                    pattern_table.insert(code, prev_value);
-                }
-                else {
-                    pattern_table.insert(code, 1);
-                }
-                break;
+            else {
+                edge_set.push(1);
             }
         }
-        count = count +1;
-        if count==100000 {
-            thousand_count = thousand_count +1;
-            count = 0;
-            println!("count {:?} 00000",thousand_count);
+        src_set.push(edge_set);
+        decode_table.push(src_set.clone());
+        if i== pattern_info.len()/3 {
+            code =_pattern_generate_2side(decode_table);
+            break;
         }
-
     }
+    code
+}
 
-    while let Some(data) = counting_patternIO.next() {
-        let pattern_info = data.unwrap();
-        // println!("pattern info {:?}",pattern_info);
-        for i in 0..pattern_info.len()/2+1 {
-            let mut edge_set = Vec::new();
-            let mut src_set = Vec::new();
-            if !vtxsrc.contains(&pattern_info[2*i]) {
-                break;
-            }
-            // generating decode_result
-            let label_vtx = graphdb.get_vertex(2*i).unwrap().get_label();
-            src_set.push(vec![i as u64,label_vtx[0] as u64]);
 
-            if i < pattern_info.len()/2 {
-                if i==1 {
-                    edge_set.push(pattern_info[2*i+1] as u64);
-                    edge_set.push(i as u64);
-                    edge_set.push(0);
 
-                }
-                else {
-                    edge_set.push(pattern_info[2*i+1] as u64);
-                    edge_set.push((i+1) as u64);
-                    edge_set.push(1);
-                }
-                
-            }
-            src_set.push(edge_set);
-            if i== pattern_info.len()/2 {
-                src_set.push(vec![(i+1)as u64,graphdb.get_vertex(2*(i+1)).unwrap().get_label()[0] as u64]);
-                src_set.push(vec![]);
-                let decode_table = vec![src_set];
-                // println!("vtx_src: {:?}",vtx_src);
-                let code =_pattern_generate_2side(decode_table);
-                if pattern_table.contains_key(&code) {
-                    let mut prev_value = pattern_table.remove(&code).unwrap();
-                    prev_value = prev_value +1;
-                    pattern_table.insert(code, prev_value);
-                }
-                else {
-                    pattern_table.insert(code, 1);
-                }
-                break;
-            }
+fn _generate_code_in_pegasusOO(vtxsrc: Vec<u64>, pattern_info: Vec<u64>) -> String {
+
+    let mut decode_table = Vec::new();
+    let mut code = String::from("");
+    for i in 0..pattern_info.len()/3+1 {
+        let mut edge_set = Vec::new();
+        let mut src_set = Vec::new();
+        if !vtxsrc.contains(&pattern_info[3*i]) {
+            break;
         }
-        count = count +1;
-        if count==100000 {
-            thousand_count = thousand_count +1;
-            count = 0;
-            println!("count {:?} 00000",thousand_count);
-        }
+        // generating decode_result
+        let label_vtx = pattern_info[i*3+1];
+            src_set.push(vec![i as u64,label_vtx as u64]);
 
+        if i < pattern_info.len()/3 {
+            edge_set.push(pattern_info[3*i+2] as u64);
+            edge_set.push((i+1) as u64);
+            edge_set.push(0);
+        }
+        src_set.push(edge_set);
+        decode_table.push(src_set.clone());
+        if i== pattern_info.len()/3 {
+            code =_pattern_generate_2side(decode_table);
+            break;
+        }
     }
-
-    while let Some(data) = counting_patternOI.next() {
-        let pattern_info = data.unwrap();
-        // println!("pattern info {:?}",pattern_info);
-        for i in 0..pattern_info.len()/2+1 {
-            let mut edge_set = Vec::new();
-            let mut src_set = Vec::new();
-            if !vtxsrc.contains(&pattern_info[2*i]) {
-                break;
-            }
-            // generating decode_result
-            let label_vtx = graphdb.get_vertex(2*i).unwrap().get_label();
-            src_set.push(vec![i as u64,label_vtx[0] as u64]);
-
-            if i < pattern_info.len()/2 {
-                if i==0 {
-                    edge_set.push(pattern_info[2*i+1] as u64);
-                    edge_set.push((i+1) as u64);
-                    edge_set.push(0);
-
-                }
-                else {
-                    edge_set.push(pattern_info[2*i+1] as u64);
-                    edge_set.push(i as u64);
-                    edge_set.push(1);
-                }
-                
-            }
-            src_set.push(edge_set);
-            if i== pattern_info.len()/2 {
-                src_set.push(vec![(i+1)as u64,graphdb.get_vertex(2*(i+1)).unwrap().get_label()[0] as u64]);
-                src_set.push(vec![]);
-                let decode_table = vec![src_set];
-                // println!("vtx_src: {:?}",vtx_src);
-                let code =_pattern_generate_2side(decode_table);
-                if pattern_table.contains_key(&code) {
-                    let mut prev_value = pattern_table.remove(&code).unwrap();
-                    prev_value = prev_value +1;
-                    pattern_table.insert(code, prev_value);
-                }
-                else {
-                    pattern_table.insert(code, 1);
-                }
-                break;
-            }
-        }
-        count = count +1;
-        if count==100000 {
-            thousand_count = thousand_count +1;
-            count = 0;
-            println!("count {:?} 00000",thousand_count);
-        }
-
-    }
-    println!("finish collecting");
-    let end_full = Instant::now();
-    println!("time cost for generating table: {:?}s",end_full.duration_since(start_full));
-    // println!("pattern table {:?}",pattern_table);
-    let res = _pattern_estimation_CEG_vertex_version(graphdb, pattern, pattern_table, 0, 2);
-    res
-    
+    code
 }
 
 
@@ -965,28 +1392,26 @@ fn _pattern_mining(pattern: Vec<Vec<String>>, graphdb: &LargeGraphDB) -> HashMap
             }
         }
         path.sort();
-        path.dedup();
+        // path.dedup();
         let mut i=0;
-
-        while i <path.len()-1{
+        if path.len()<=0 {
+            continue;
+        }
+        println!("path len {:?}",path.len());
+        while i <path.len(){
             let mut k = path[i].clone();
             k.sort();
             // index problem
             for j in 0..k.len()-1 {
-                if k[j]==k[j+1] || k[j]==0 {
+                if k[j]==k[j+1] || (k[j]==0 && j>0) {
                     path.remove(i);
                     break;
                 }
             }
             i = i+1;
         }
-        let mut local_code:String = String::from("");
         let mut list = l.clone();
-        list.sort();
-        for m in list{
-            local_code = local_code + &m;
-            local_code = local_code + "_";
-        }
+        let local_code = _pattern_generate_2side(_decode_pattern(list));
         catalog.insert(local_code, path.len() as u64);
     }
     catalog
@@ -1001,12 +1426,10 @@ fn _pattern_estimation_CEG_vertex_version(graphdb: &LargeGraphDB, pattern: Vec<V
         // adjlist: Vec![edge label, dst_gid]
         let decode_res: Vec<Vec<Vec<u64>>> = _decode_pattern(i.clone());
         let pattern_table2 = pattern_table.clone();
-        println!("gpe length {:?}", decode_res.len());
+        let pattern_insert_code = _pattern_generate_2side(decode_res.clone());
         // to detect if it is loop(in thresold length), it stores the previous vertex combination
         // once there is a new vertex that has two connection with vtx in previous combination
         // treat as loop
-        let mut occur_set: HashSet<Vec<u64>> = HashSet::new();
-        let mut occur_vtx: HashSet<u64> = HashSet::new();
 
         let mut estimate_result:f64 =0f64;
 
@@ -1019,51 +1442,64 @@ fn _pattern_estimation_CEG_vertex_version(graphdb: &LargeGraphDB, pattern: Vec<V
         for j in 0..decode_res.len() {
             gpe.push(vec![decode_res[j][0][0]]);
         }
+        println!("decode_res length {:?}",decode_res.len());
+        println!("table {:?}",decode_res);
         while !gpe.is_empty() {
             let cur_path = gpe[0].clone();
             gpe.remove(0);
-            let start_gid = cur_path[cur_path.len()-1];
+            let mut start_gid = cur_path[cur_path.len()-1];
+            let mut start_index = cur_path.len()-1;
+            while true {
+                let adj_of_start = decode_res[start_gid as usize][1].clone();
+                let mut found_available_adj = false;
+                for i in 0..adj_of_start.len()/3 {
+                    if !cur_path.clone().contains(&adj_of_start[i*3+1]) {
+                        found_available_adj = true;
+                        break;
+                    }
+                }
+                if found_available_adj {
+                    break;
+                }
+                if start_index<= 0 {
+                    break;
+                }
+                start_index = start_index -1;
+                start_gid = cur_path[start_index];
+
+            }
+
             let decode_copy = decode_res[start_gid as usize].clone();
             let list_adj = decode_copy[1].clone();
             for i in 0..list_adj.len()/3 {
                 let mut to_push_list = cur_path.clone();
                 if !to_push_list.contains(&list_adj[i*3+1]) {
                     to_push_list.push(list_adj[i*3+1]);
-                }
-                else {
-                    continue;
-                }
-                if to_push_list.len() < decode_res.len() {
-                    gpe.push(to_push_list);
-                }
-                else {
-                    result_list.push(to_push_list);
+                    if to_push_list.len() < decode_res.len() {
+                        gpe.push(to_push_list);
+                    }
+                    else {
+                        result_list.push(to_push_list);
+                    }
                 }
             }
-            println!("remian {:?}", gpe);
         }
-        println!("gpe: {:?}",result_list);
         // path generated
 
+        if result_list.len() == 0 {
+            continue;
+        }
         // case1: pattern size <= depth, directly get result
-        if (result_list[0].len() < depth as usize) {
+        if pattern_table.contains_key(&pattern_insert_code) {
             // return cardinality
-            let mut local_code:String = String::from("");
-            let mut list = i.clone();
-            list.sort();
-            for m in list{
-                local_code = local_code + &m;
-                local_code = local_code + "_";
-            }
-            estimate_result = pattern_table[&local_code] as f64;
-            catalog.insert(local_code, estimate_result as u64);
+            estimate_result = pattern_table[&pattern_insert_code] as f64;
+            catalog.insert(pattern_insert_code.clone(), estimate_result as u64);
         }
 
         // case2 pattern size > depth, get front partial from pattern table, and extend the remain vertex
         else {
             let mut estimations: Vec<u64> = Vec::new();
             for path in result_list{
-                let mut local_code:String = String::from("");
                 let mut pattern_table_vertex: HashSet<u64> = HashSet::new();
                 for l in 0..depth as usize {
                     pattern_table_vertex.insert(path[l]);
@@ -1092,13 +1528,19 @@ fn _pattern_estimation_CEG_vertex_version(graphdb: &LargeGraphDB, pattern: Vec<V
                     partial_decode_table.push(vec![decode_table[i][0].clone(),partial_adj_table.clone()]);
                     partial_added_vtx.push(decode_table[i][0][0]);
                 }
-                let local_code = _pattern_generate_2side(partial_decode_table.clone());
+                let mut local_code = _pattern_generate_2side(partial_decode_table.clone());
+                let mut str_info: Vec<String> = Vec::new();
+                for i in local_code.split("==") {
+                    if i=="" {
+                        continue;
+                    }
+                    str_info.push(i.to_string());
+                }
+                local_code = _pattern_generate_2side(_decode_pattern(str_info.clone()));
                 println!("decode_table {:?}",partial_decode_table);
                 println!("local code {:?}", local_code);
-                for i in pattern_table.keys() {
-                    println!("key: {:?}, value: {:?}",i,pattern_table[i]);
-                }
                 estimate_result = pattern_table[&local_code] as f64;
+                println!("initial subgraph value {:?}", estimate_result);
 
 
                 for a in depth as usize..path.len() {
@@ -1108,18 +1550,21 @@ fn _pattern_estimation_CEG_vertex_version(graphdb: &LargeGraphDB, pattern: Vec<V
                             //  and previous node has only one other edge A, then calculate |A,B|/|A|
                     // 2. if it NOT generate cycle |i.e. it has only one adj in visited,
                             //  and previous node has several edges A,B,C then calculate |A,B|/|A| where B is max-weight-edge
-                    // if it generate loops, |i.e. it has two visited edges in adj_list, 
+                    // if it generate cycle, |i.e. it has two visited edges in adj_list, 
                     let extend_gid = path[a];
                     // judge if it has cycle
                     let mut adj_list: Vec<u64> = Vec::new();
                     let mut adj_list_edge: Vec<u64> = Vec::new();
+                    let mut adj_list_dir: Vec<u64> = Vec::new();
                     let extend_copy = decode_res[extend_gid as usize].clone();
+                    let extend_label = decode_res[extend_gid as usize].clone()[0][1];
                     let extend_adj = extend_copy[1].clone();
                     for idx in 0..extend_adj.len()/3 {
                         for j in 0..a{
                             if extend_adj[idx*3+1]==path[j] as u64 {
                                 adj_list.push(extend_adj[idx*3+1]);
                                 adj_list_edge.push(extend_adj[idx*3]);
+                                adj_list_dir.push(extend_adj[idx*3+2]);
                             }
                         }
                     }
@@ -1141,29 +1586,50 @@ fn _pattern_estimation_CEG_vertex_version(graphdb: &LargeGraphDB, pattern: Vec<V
                             extend_partial_adj.push(extend_adj[i*3+2]);
                         }
                         partial_decode_table.push(vec![decode_table[extend_gid as usize][0].clone(), extend_partial_adj]);
-                        let local_code = _pattern_generate_2side(partial_decode_table);
+                        let mut local_code = _pattern_generate_2side(partial_decode_table);
                         let mut str_info: Vec<String> = Vec::new();
                         for i in local_code.split("==") {
+                            if i=="" {
+                                continue;
+                            }
                             str_info.push(i.to_string());
                         }
+                        local_code = _pattern_generate_2side(_decode_pattern(str_info.clone()));
                         // CEG estimation for single pattern and no loop (i.e. return u64)
                         let temp_estimation = _pattern_estimation_CEG_vertex_version(graphdb, vec![str_info], pattern_table2.clone(), aggregator, depth);
+                        println!("temp_estimation {:?} \n estimation_code: {:?}", temp_estimation, local_code);
                         let closing_pattern_num = temp_estimation[&local_code];
-                        let mut multiply_extend_degree = 1u64;
+                        let mut multiply_extend_degree = 1f64;
                         
                         // next, get all 
-                        let mut partial_decode_table = Vec::new();
                         for j in adj_list.clone() {
                             for k in 0..extend_adj.clone().len()/3 {
-                                if k as u64*3+1 == j {
+                                if extend_adj[k*3+1] == j {
+                                    let mut prev_node_label = 0;
+                                    for a in 0..decode_res.len() {
+                                        if decode_res[a][0][0]==j as u64 {
+                                            prev_node_label = decode_res[a][0][1];
+                                        }
+                                    }
+                                    let prev_vertex_number = graphdb.count_all_vertices(Some(&vec![prev_node_label as u8])) as f64;
+                                    let cur_vertex_number = graphdb.count_all_vertices(Some(&vec![extend_label as u8])) as f64;
+                                    let mut partial_decode_table = Vec::new();
                                     partial_decode_table.push(vec![decode_table[j as usize][0].clone(), vec![]]);
                                     partial_decode_table.push(vec![decode_table[extend_gid as usize][0].clone(), vec![extend_adj[k*3], extend_adj[k*3+1], extend_adj[k*3+2]]]);
                                     let edge_encoding = _pattern_generate_2side(partial_decode_table.clone());
-                                    multiply_extend_degree = multiply_extend_degree * pattern_table[&edge_encoding];
+                                    println!("decode_table {:?}",partial_decode_table);
+                                    println!("edge encoding {:?}", edge_encoding);
+                                    let mut avg_closing_edge = pattern_table[&edge_encoding] as f64;
+                                    if prev_node_label == extend_label {
+                                        avg_closing_edge *= 2f64;
+                                    }
+                                    multiply_extend_degree = multiply_extend_degree / (prev_vertex_number * cur_vertex_number) * estimate_result * avg_closing_edge;
                                 }
                             }
                         }
                         estimate_result = estimate_result * closing_pattern_num as f64 / multiply_extend_degree as f64;
+                        println!("closing pattern_num:  {:?}\nmultiply_extend_degree: {:?}\nestimate_result: {:?}",closing_pattern_num,multiply_extend_degree,estimate_result);
+                        continue;
                     }
                     else if adj_list.len() <1 {
                         println!("find previous node in path error!");
@@ -1173,43 +1639,65 @@ fn _pattern_estimation_CEG_vertex_version(graphdb: &LargeGraphDB, pattern: Vec<V
                     // TODO, change to find all info in pattern table rather than use graphdb
                     for i in 0..adj_list.len() {
                         // NOT loop case
-                        assert_eq!(adj_list.len(),1);
                         let previous_node = adj_list[i];
                         let current_edge = adj_list_edge[i];
                         let previous_copy = decode_res[previous_node as usize].clone();
                         let previous_adj = previous_copy[1].clone();
                         let mut local_max_edge: u64 = 0;
-                        let mut local_max_weight: u64 = 1;
+                        let mut local_min_edge: u64 = 0;
+                        let mut local_single_edge: u64 = 0;
+                        let mut partial_decode_table = Vec::new();
+                        partial_decode_table.push(vec![decode_table[extend_gid as usize][0].clone(),vec![adj_list_edge[i],adj_list[i],adj_list_dir[i]]]);
+
+                        let mut single_edge_table = partial_decode_table.clone();
+                        single_edge_table.push(vec![previous_copy[0].clone(),vec![]]);
+                        let single_edge_code = _pattern_generate_2side(single_edge_table.clone());
+                        println!("single edge {:?}",single_edge_code);
+                        local_single_edge = pattern_table[&single_edge_code];
+                        
                         for idx in 0..previous_adj.len()/3 {
                             if previous_adj[idx*3+1] != extend_gid {
-                                let weight_count = graphdb.count_all_edges(Some(&vec![previous_adj[idx*3] as u8])) as u64;
-                                if weight_count >= local_max_weight {
-                                    local_max_weight = weight_count;
-                                    local_max_edge = previous_adj[idx*2];
+                                let mut tobreak = true;
+                                for n in 0..a {
+                                    if path[n] == previous_adj[idx*3+1] {
+                                        tobreak = false;
+                                    }
+                                }
+                                if tobreak {
+                                    continue;
+                                }
+                                let mut pdb = partial_decode_table.clone();
+                                pdb.push(vec![previous_copy[0].clone(),vec![previous_adj[idx*3],previous_adj[idx*3+1],previous_adj[idx*3+2]]]);
+                                let prev_prev_node = decode_res[previous_adj[idx*3+1] as usize][0].clone();
+                                pdb.push(vec![prev_prev_node,vec![]]);
+                                let local_code = _pattern_generate_2side(pdb.clone());
+                                println!("double edge {:?}",local_code);
+                                let local_edge_number = pattern_table[&local_code];
+                                if local_max_edge < local_edge_number {
+                                    local_max_edge = local_edge_number;
+                                }
+                                if local_min_edge < local_edge_number || local_min_edge==0 {
+                                    local_min_edge = local_edge_number;
                                 }
                             }
                         }
-                        // finish selected max-weight-path
-                        //write a flatmap to get (local_edge---flat_map----current_edge / local_edge)
-                        let prev_node_with_prev_edge = graphdb.get_all_edges(Some(&vec![local_max_edge as u8]));
-                        // TODO: change to find number in the pattern table
-                        let prev_count = graphdb.get_all_edges(Some(&vec![local_max_edge as u8])).count();
-                        let mut count: u64 =0;
-                        for i in prev_node_with_prev_edge {
-                            if graphdb.get_vertex(i.get_dst_id()).unwrap().get_label()[0] == decode_res[previous_node as usize][0][1] as u8 {
-                                count = count + graphdb.get_both_edges(i.get_dst_id(), Some(&vec![current_edge as u8])).count() as u64;
-                            }
-                            else {
-                                count = count + graphdb.get_both_edges(i.get_other_id(), Some(&vec![current_edge as u8])).count() as u64;
-                            }
+                        if aggregator ==0 {
+                            estimate_result = estimate_result * (local_max_edge+local_min_edge) as f64 / 2f64 / local_single_edge as f64;
                         }
-                        estimate_result = estimate_result * count as f64 / prev_count as f64;
+                        if aggregator ==1 {
+                            estimate_result = estimate_result * local_max_edge as f64 / local_single_edge as f64;
+                        }
+                        if aggregator ==2 {
+                            estimate_result = estimate_result * local_min_edge as f64 / local_single_edge as f64;
+                        }
+                        println!("count of edge: {:?}, prev_edge_count Max: {:?}",local_single_edge,local_max_edge);
                     }
-                    
-
                 }
                 // here has generated a result for current path
                 estimations.push(estimate_result as u64);
+            }
+            for i in estimations.clone() {
+                println!("final result {:?}", i);
             }
             // aggregate it
             // avg, max, min ...
@@ -1231,21 +1719,14 @@ fn _pattern_estimation_CEG_vertex_version(graphdb: &LargeGraphDB, pattern: Vec<V
             }
             if aggregator ==2 {
                 for i in estimations.clone() {
-                    if i < mid {
+                    if i < mid && mid !=0 {
                         mid =i
                     }
                 }
                 estimate_result = mid as f64;
             }
         }
-        let mut local_code:String = String::from("");
-        let mut list = i.clone();
-        list.sort();
-        for m in list{
-            local_code = local_code + &m;
-            local_code = local_code + "_";
-        }
-        catalog.insert(local_code, estimate_result as u64);
+        catalog.insert(pattern_insert_code.clone(), estimate_result as u64);
     }
     catalog
 }
@@ -1286,7 +1767,7 @@ fn _pattern_generate_2side(src: Vec<Vec<Vec<u64>>>) -> String {
     // idx: each vertex -> [[gid, label], [adjlist]]
     // adjlist: Vec![edge label, dst_gid..]
     let mut mut_graph: MutableGraphDB<DefaultId, InternalId> = GraphDBConfig::default().new();
-
+    let mut occur_edge_set = HashSet::new();
     let mut vertexsrc :Vec<u64> = Vec::new();
     for i in src.clone() {
         
@@ -1299,10 +1780,20 @@ fn _pattern_generate_2side(src: Vec<Vec<Vec<u64>>>) -> String {
         let src_id = i[0][0];
         for j in 0..adj_list.len()/3 {
             if adj_list[3*j+2]==0 {
+                let edge_cu  = (src_id,adj_list[3*j+1],adj_list[3*j]);
+                if occur_edge_set.contains(&edge_cu) {
+                    continue;
+                }
+                occur_edge_set.insert(edge_cu);
                 mut_graph.add_edge(src_id as usize, adj_list[3*j+1] as usize, adj_list[3*j] as u8);
             }
             else { 
+                let edge_cu  = (adj_list[3*j+1],src_id,adj_list[3*j]);
+                if occur_edge_set.contains(&edge_cu) {
+                    continue;
+                }
             mut_graph.add_edge(adj_list[3*j+1] as usize,src_id as usize,  adj_list[3*j] as u8);
+            occur_edge_set.insert(edge_cu);
             }
         }
     }
@@ -1554,325 +2045,3 @@ fn _update_catalog_loca(src: Vec<u64>, graphdb: &LargeGraphDB, edge_info: Option
     total_code
 }
 
-
-fn _update_catalog(src: Vec<u64>, graphdb: &LargeGraphDB) -> String {
-    let mut vertex_set = HashSet::new();
-    let cloneset = src.clone();
-    let indexing_map = _indexing_vertex(src, graphdb);
-    for i in cloneset {
-        vertex_set.insert(i);
-    }
-    let edgeset = _get_edges(vertex_set, graphdb);
-
-    let code_len = edgeset.len();
-    let mut total_code = String::from("");
-    let mut codes: Vec<String> = Vec::new();
-    for i in edgeset {
-        let label = graphdb.get_edge(i).unwrap().get_label();
-        let dst_id = graphdb.get_edge(i).unwrap().get_other_id();
-        let idx1 = indexing_map[&(i.0 as u64)];
-        let idx2 = indexing_map[&(dst_id as u64)];
-        let label1 = GRAPH.get_vertex(i.0).unwrap().get_label();
-        let label2 = GRAPH.get_vertex(dst_id).unwrap().get_label();
-        let mut dir: u8 = 0;
-        if label1 != label2{
-            dir = 0;
-        }
-        else {
-            if idx1 > idx2 {
-                dir = 1;
-            }
-        }
-        let local_code = label1[0].to_string() + "_" + &label2[0].to_string() + "_" + &label.to_string() + "_" + &(dir.to_string()) + "_" + &(idx1.to_string()) + "_" + &(idx2.to_string());
-        codes.push(local_code);
-    }
-    codes.sort();
-    for i in codes{
-        if total_code.len()!=0{
-            total_code += "==";
-        }
-        total_code += &i;
-    }
-
-    total_code
-}
-
-
-fn _pattern_counting(graphdb: &LargeGraphDB, min_pattern_size: u64, max_pattern_size: u64, top_frequent_pattern: u64, vertex_set: HashSet<u64>, sample_method: u64) -> HashMap<std::string::String, u64> {
-    
-    let mut catalog = HashMap::new();
-    let mut occur_count = HashSet::new();
-    let mut vertex_occur_count = HashSet::new();
-    let mut to_mining = VecDeque::new();
-    println!("test sampled length  {:?}", vertex_set.len());
-
-    let mut select_iter = vertex_set.iter();
-    // for test
-    let mut appear_max_len =0;
-
-    let filename: String;
-    if sample_method==0 {
-        filename= String::from("text1.txt");
-    }
-    else {
-        filename= String::from("text2.txt");
-    }
-    let mut f = std::fs::File::create(filename).unwrap();
-
-
-    while !to_mining.is_empty() || vertex_occur_count.len()<vertex_set.len(){
-        // println!("Get started");
-        let select_option = select_iter.next();
-        if select_option.is_none() {
-            break;
-        }
-        let select_id :&u64 = select_option.unwrap();
-        if vertex_occur_count.contains(select_id) {
-            continue;
-        }
-        to_mining.push_back(vec![*select_id]);
-        vertex_occur_count.insert(*select_id);
-
-        // f.write("\n".as_bytes());
-        // f.write(select_id.to_string().as_bytes());
-        
-
-        while !to_mining.is_empty() {
-            // println!("Minning queue size = {:?}", to_mining.len() as u64);
-            let path = to_mining.pop_front().unwrap();
-            if path.len()as u64 > appear_max_len {
-                appear_max_len = path.len()as u64;
-            }
-            if path.len() as u64 > max_pattern_size {
-                continue;
-            }
-            // println!("Path {:?}",path);
-            if path.len()>min_pattern_size as usize {
-                let c_path = path.clone();
-                let cc_path = path.clone();
-                // println!("=================update catalog====================");
-                let cata_index =_update_catalog(c_path, graphdb);
-                f.write("\n".as_bytes());
-                for i in cc_path.clone() {
-                    f.write(i.to_string().as_bytes());
-                    f.write(", ".as_bytes());
-                }
-                f.write(cc_path.len().to_string().as_bytes());
-                if !catalog.contains_key(&cata_index) {
-                    catalog.insert(cata_index, 1);
-                }
-                else {
-                    let key = cata_index;
-                    let value = catalog[&key] as u64 +1;
-                    catalog.remove(&key);
-                    catalog.insert(key, value);
-                }
-            }
-            // let mut result = _sampling_adjvertex(confadj, &path).expect("Run Job Error!");
-            for component_vtx in path.clone() {
-                let mut result = graphdb.get_both_vertices(component_vtx as usize, None);
-                // get extend vertex into to_mining
-                while let Some(data) = result.next() {
-                    
-                    // println!("Get adj vertex");
-                    let sample_id: u64 = data.get_id() as u64;
-                    let mut sample_extend = path.clone();
-                    if !sample_extend.contains(&sample_id){
-                        sample_extend.push(sample_id);
-                    }
-                    if graphdb.get_vertex(sample_id as usize).is_none() {
-                        continue;
-                    }
-                    sample_extend.sort();
-                    if (path.len() as u64 <= max_pattern_size) && !occur_count.contains(&sample_extend) {
-                        let mut clone_path = path.clone();
-                        if !clone_path.contains(&sample_id){
-                            clone_path.push(sample_id);
-                        }
-                        let fs_record = clone_path.clone();
-                        let path_len: u64 = clone_path.len() as u64;
-                        if path_len <= max_pattern_size{
-                            clone_path.sort();
-                            let clone_path2 = clone_path.clone();
-                            to_mining.push_back(clone_path);
-                            occur_count.insert(clone_path2);
-
-                        }
-                    }
-                    
-                    if !vertex_occur_count.contains(&sample_id) {
-                        to_mining.push_back(vec![sample_id]);
-                        vertex_occur_count.insert(sample_id);
-                    }
-                }
-            }
-            
-        f.write("\n   == ".as_bytes());
-        f.write(vertex_occur_count.len().to_string().as_bytes());
-        if vertex_occur_count.len() > vertex_set.len() {
-            break;
-        }
-        }
-    }
-    
-    println!("Length {:?}",appear_max_len);
-    let statistic_catalog = catalog.clone();
-
-    let pattern_kinds = statistic_catalog.len() as u64;
-    println!("Pattern type number is {:?}   pattern number is {:?}", pattern_kinds, occur_count.len());
-    
-    println!("catalog :\n {:?} \n",statistic_catalog);
-
-    statistic_catalog
-    
-    
-}
-
-
-
-
-
-    // // Exp1
-    // f.write("\n\n".as_bytes()).unwrap();
-    // f.write("   Experiment 1 ".as_bytes()).unwrap();
-    // f.write("\n\n".as_bytes()).unwrap();
-    // let para_1_exp1 = vec![5];
-    // let para_2_exp1 = vec![5];
-    // let para_3_exp1 = vec![2];
-    // let para_4_exp1 = vec![3];
-    
-    
-    // for l in para_4_exp1.clone() {
-    //     for k in para_3_exp1.clone() {
-    //         let start_full = Instant::now();
-    //         println!("======================================================================");
-    //         println!("              Sample ALL                ");
-    //         println!("======================================================================");
-    //         println!("rate: {:?},  area: {:?},  min_size: {:?},  max_size: {:?}", 100, 0, &k, &l);
-    //         let mut cmp_result = _sampling_arrange(1, 10, k, l, 15, 0);
-    //         let end_full = Instant::now();
-    //         println!("time cost: {:?}",end_full.duration_since(start_full));
-    //         for j in para_2_exp1.clone() {
-                
-    //             f.write("\n\n".as_bytes()).unwrap();
-    //             f.write("area: ".as_bytes()).unwrap();
-    //             f.write(j.to_string().as_bytes()).unwrap();
-    //             f.write("   min_size: ".as_bytes()).unwrap();
-    //             f.write(k.to_string().as_bytes()).unwrap();
-
-
-    //                 for i in para_1_exp1.clone() {
-    //                     let sample_method = 1u64;
-    //                     let start_time = Instant::now();
-    //                     println!("======================================================================");
-    //                     println!("                              ");
-    //                     println!("======================================================================");
-    //                     println!("rate: {:?},  area: {:?},  min_size: {:?},  max_size: {:?}", &i, &j, &k, &l);
-    //                     let result = _sampling_arrange(i, j, k, l, l, sample_method);
-    //                     let end_time = Instant::now();
-    //                     f.write("\n\n".as_bytes()).unwrap();
-    //                     f.write("   sample rate: ".as_bytes()).unwrap();
-    //                     f.write(i.to_string().as_bytes()).unwrap();
-    //                     for q in result{
-    //                         f.write("\n".as_bytes()).unwrap();
-    //                         f.write(q.0.to_string().as_bytes());
-    //                         f.write(": ".as_bytes()).unwrap();
-    //                         f.write(q.1.to_string().as_bytes());
-    //                     }
-    //                     println!("time cost: {:?}",end_time.duration_since(start_time));
-    //                 }
-                
-                
-    //         }
-    //     }
-    // }
-
-    // // Exp2
-    // f.write("\n\n".as_bytes()).unwrap();
-    // f.write("   Experiment 2 ".as_bytes()).unwrap();
-    // f.write("\n\n".as_bytes()).unwrap();
-    // let para_1_exp2 = vec![10];
-    // let para_2_exp2 = vec![10];
-    // let para_3_exp2 = vec![2];
-    // let para_4_exp2 = vec![4, 5];
-    // for l in para_4_exp2.clone() {
-    //     for k in para_3_exp2.clone() {
-    //         for j in para_2_exp2.clone() {
-                
-    //             f.write("\n\n".as_bytes()).unwrap();
-    //             f.write("area: ".as_bytes()).unwrap();
-    //             f.write(j.to_string().as_bytes()).unwrap();
-    //             f.write("   min_size: ".as_bytes()).unwrap();
-    //             f.write(k.to_string().as_bytes()).unwrap();
-
-
-    //                 for i in para_1_exp2.clone() {
-    //                     let sample_method = 1u64;
-    //                     let start_time = Instant::now();
-    //                     println!("======================================================================");
-    //                     println!("                              ");
-    //                     println!("======================================================================");
-    //                     println!("rate: {:?},  area: {:?},  min_size: {:?},  max_size: {:?}", &i, &j, &k, &l);
-    //                     let result = _sampling_arrange(i, j, k, l, l, sample_method);
-    //                     let end_time = Instant::now();
-    //                     f.write("\n\n".as_bytes()).unwrap();
-    //                     f.write("   sample rate: ".as_bytes()).unwrap();
-    //                     f.write(i.to_string().as_bytes()).unwrap();
-    //                     for q in result{
-    //                         f.write("\n".as_bytes()).unwrap();
-    //                         f.write(q.0.to_string().as_bytes());
-    //                         f.write(": ".as_bytes()).unwrap();
-    //                         f.write(q.1.to_string().as_bytes());
-    //                     }
-    //                     println!("time cost: {:?}",end_time.duration_since(start_time));
-    //                 }
-                
-                
-    //         }
-    //     }
-    // }
-    
-    // // Exp3
-    // f.write("\n\n".as_bytes()).unwrap();
-    // f.write("   Experiment 3 ".as_bytes()).unwrap();
-    // f.write("\n\n".as_bytes()).unwrap();
-    // let para_1_exp3 = vec![10, 15];
-    // let para_2_exp3 = vec![10, 20, 40];
-    // let para_3_exp3 = vec![2];
-    // let para_4_exp3 = vec![3];
-    // for l in para_4_exp3.clone() {
-    //     for k in para_3_exp3.clone() {
-    //         for j in para_2_exp3.clone() {
-                
-    //             f.write("\n\n".as_bytes()).unwrap();
-    //             f.write("area: ".as_bytes()).unwrap();
-    //             f.write(j.to_string().as_bytes()).unwrap();
-    //             f.write("   min_size: ".as_bytes()).unwrap();
-    //             f.write(k.to_string().as_bytes()).unwrap();
-
-
-    //                 for i in para_1_exp3.clone() {
-    //                     let sample_method = 1u64;
-    //                     let start_time = Instant::now();
-    //                     println!("======================================================================");
-    //                     println!("                              ");
-    //                     println!("======================================================================");
-    //                     println!("rate: {:?},  area: {:?},  min_size: {:?},  max_size: {:?}", &i, &j, &k, &l);
-    //                     let result = _sampling_arrange(i, j, k, l, l, sample_method);
-    //                     let end_time = Instant::now();
-    //                     f.write("\n\n".as_bytes()).unwrap();
-    //                     f.write("   sample rate: ".as_bytes()).unwrap();
-    //                     f.write(i.to_string().as_bytes()).unwrap();
-    //                     for q in result{
-    //                         f.write("\n".as_bytes()).unwrap();
-    //                         f.write(q.0.to_string().as_bytes());
-    //                         f.write(": ".as_bytes()).unwrap();
-    //                         f.write(q.1.to_string().as_bytes());
-    //                     }
-    //                     println!("time cost: {:?}",end_time.duration_since(start_time));
-    //                 }
-                
-                
-    //         }
-    //     }
-    // }

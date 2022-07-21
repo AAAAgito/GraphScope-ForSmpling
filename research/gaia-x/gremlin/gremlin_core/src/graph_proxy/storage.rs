@@ -29,10 +29,16 @@ use graph_store::prelude::{
     LDBCGraphSchema, LargeGraphDB, LocalEdge, LocalVertex, MutableGraphDB, Row, INVALID_LABEL_ID,
 };
 use pegasus_common::downcast::*;
+use pegasus::api::{Count, Filter, Merge, Fold, KeyBy, Map, PartitionByKey, Sink, Join, Dedup};
+use pegasus::result::ResultStream;
+use pegasus::{Configuration, JobConf, flat_map, ServerConf};
+use pegasus::errors::{BuildJobError, JobSubmitError, SpawnJobError, StartupError};
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::path::Path;
 use std::sync::atomic::{AtomicPtr, Ordering};
 use std::sync::Arc;
+use graph_store::graph_db::Direction as dir;
 
 lazy_static! {
     pub static ref DATA_PATH: String = configure_with_default!(String, "DATA_PATH", "".to_string());
@@ -51,9 +57,9 @@ fn initialize() -> Arc<DemoGraph> {
 }
 
 fn _init_graph() -> LargeGraphDB<DefaultId, InternalId> {
-    let data_dir = "data/test_data";
-    let root_dir = "data/test_data";
-    let schema_file = "data/schema_test_data.json";
+    let data_dir = "data/graph_data";
+    let root_dir = "data/graph_data";
+    let schema_file = "data/schema.json";
     let mut loader =
         GraphLoader::<DefaultId, InternalId>::new(data_dir, root_dir, schema_file, 20, 0, 1);
     // load whole graph
@@ -62,128 +68,7 @@ fn _init_graph() -> LargeGraphDB<DefaultId, InternalId> {
     graphdb
 }
 
-fn _init_modern_graph() -> LargeGraphDB<DefaultId, InternalId> {
-    let mut mut_graph: MutableGraphDB<DefaultId, InternalId> = GraphDBConfig::default().new();
 
-    let v1: DefaultId = LDBCVertexParser::to_global_id(1, 0);
-    let v2: DefaultId = LDBCVertexParser::to_global_id(2, 0);
-    let v3: DefaultId = LDBCVertexParser::to_global_id(3, 1);
-    let v4: DefaultId = LDBCVertexParser::to_global_id(4, 0);
-    let v5: DefaultId = LDBCVertexParser::to_global_id(5, 1);
-    let v6: DefaultId = LDBCVertexParser::to_global_id(6, 0);
-
-    mut_graph.add_vertex(v1, [0, INVALID_LABEL_ID]);
-    mut_graph.add_vertex(v2, [0, INVALID_LABEL_ID]);
-    mut_graph.add_vertex(v3, [1, INVALID_LABEL_ID]);
-    mut_graph.add_vertex(v4, [0, INVALID_LABEL_ID]);
-    mut_graph.add_vertex(v5, [1, INVALID_LABEL_ID]);
-    mut_graph.add_vertex(v6, [0, INVALID_LABEL_ID]);
-
-    let prop7 = Row::from(vec![object!(0.5)]);
-    let prop8 = Row::from(vec![object!(0.4)]);
-    let prop9 = Row::from(vec![object!(1.0)]);
-    let prop10 = Row::from(vec![object!(0.4)]);
-    let prop11 = Row::from(vec![object!(1.0)]);
-    let prop12 = Row::from(vec![object!(0.2)]);
-
-    mut_graph.add_edge_with_properties(v1, v2, 0, prop7).unwrap();
-    mut_graph.add_edge_with_properties(v1, v3, 1, prop8).unwrap();
-    mut_graph.add_edge_with_properties(v1, v4, 0, prop9).unwrap();
-    mut_graph.add_edge_with_properties(v4, v3, 1, prop10).unwrap();
-    mut_graph.add_edge_with_properties(v4, v5, 1, prop11).unwrap();
-    mut_graph.add_edge_with_properties(v6, v3, 1, prop12).unwrap();
-
-    let prop1 = Row::from(vec![object!(1), object!("marko"), object!(29)]);
-    let prop2 = Row::from(vec![object!(2), object!("vadas"), object!(27)]);
-    let prop3 = Row::from(vec![object!(3), object!("lop"), object!("java")]);
-    let prop4 = Row::from(vec![object!(4), object!("josh"), object!(32)]);
-    let prop5 = Row::from(vec![object!(5), object!("ripple"), object!("java")]);
-    let prop6 = Row::from(vec![object!(6), object!("peter"), object!(35)]);
-
-    mut_graph.add_or_update_vertex_properties(v1, prop1).unwrap();
-    mut_graph.add_or_update_vertex_properties(v2, prop2).unwrap();
-    mut_graph.add_or_update_vertex_properties(v3, prop3).unwrap();
-    mut_graph.add_or_update_vertex_properties(v4, prop4).unwrap();
-    mut_graph.add_or_update_vertex_properties(v5, prop5).unwrap();
-    mut_graph.add_or_update_vertex_properties(v6, prop6).unwrap();
-
-    let modern_graph_schema = r#"
-    {
-      "vertex_type_map": {
-        "person": 0,
-        "software": 1
-      },
-      "edge_type_map": {
-        "knows": 0,
-        "created": 1
-      },
-      "vertex_prop": {
-        "person": [
-          [
-            "id",
-            "ID"
-          ],
-          [
-            "name",
-            "String"
-          ],
-          [
-            "age",
-            "Integer"
-          ]
-        ],
-        "software": [
-          [
-            "id",
-            "ID"
-          ],
-          [
-            "name",
-            "String"
-          ],
-          [
-            "lang",
-            "String"
-          ]
-        ]
-      },
-      "edge_prop": {
-        "knows": [
-          [
-            "start_id",
-            "ID"
-          ],
-          [
-            "end_id",
-            "ID"
-          ],
-          [
-            "weight",
-            "Double"
-          ]
-        ],
-        "created": [
-          [
-            "start_id",
-            "ID"
-          ],
-          [
-            "end_id",
-            "ID"
-          ],
-          [
-            "weight",
-            "Double"
-          ]
-        ]
-      }
-    }
-    "#;
-    let schema =
-        LDBCGraphSchema::from_json(modern_graph_schema.to_string()).expect("Parse schema error!");
-
-    mut_graph.into_graph(schema)
-}
 
 impl GraphProxy for DemoGraph {
     fn scan_vertex(
